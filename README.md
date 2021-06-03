@@ -154,6 +154,38 @@ const abstractElts = [
 document.body.append(...toDom(abstractElts))
 ```
 
+To enable watch and update on the DOM when values change, use `vdRender()` method
+
+```typescript
+// First time render
+const watch = vdRender(
+    vd(MyComponent, props1), targetElement
+)
+
+// Anytime you want to update:
+watch.update(
+    vd(MyComponent, props2)
+)
+```
+
+Rather than doing a complete replacement, it will patch the changes efficiently.
+
+A complete example:
+
+```typescript
+let c = 0
+function onIncrement(e: Event) {
+    watch.update(vd(Counter, {count: c++}))
+}
+
+const Counter = ({count = 0}) => vd('div', {}, [
+    vd('div', {}, `${count}`),
+    vd('button', {onclick: onIncrement}, '+')
+])
+
+let watch = vdRender(vd(Counter, {}), document.getElementById('app')!)
+```
+
 ## To React
 
 To render a static virtual DOM tree in a react component,
@@ -251,3 +283,4 @@ which will output:
 
 ## To Svelte Component
 
+TBD

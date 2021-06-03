@@ -1,15 +1,13 @@
 import {BOOL_ATTRS} from "./Common";
 import {
-    AbstractDomComponent,
     AbstractDomElement,
     AbstractDomNode,
-    evalLazyElement,
-    PrimitiveComponent
+    evalLazyElement, vd
 } from "./AbstractDOM";
-import {isArray, isFunc, OneOrMany, toArray} from "boost-web-core";
-/*// @ts-ignore
+import {isArray, isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
+// @ts-ignore
 import {DiffDOM} from "diff-dom";
-const dd = new DiffDOM({valueDiffing: false});*/
+const dd = new DiffDOM({valueDiffing: false});
 
 export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocument?: HTMLDocument): T[] {
     let result: T[] = []
@@ -72,4 +70,20 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
     }
 
     return results
+}
+
+export function vdRender(elt: AbstractDomElement, target: HTMLElement): { update(newElement: AbstractDomElement): any } {
+    target.append(toDomElement(elt))
+    return {
+        update(newElt: AbstractDomElement) {
+            const newDomElement = toDomElement(newElt, target.ownerDocument)
+            const patcher = (dest: any, src: any) => dd.apply(dest, dd.diff(dest, src))
+            let success = patcher(target.firstChild!, newDomElement)
+            if (!success) {
+                console.warn('Diff couldn\'t be efficiently applied');
+                target.innerHTML = ''
+                target.append(newDomElement)
+            }
+        }
+    }
 }
