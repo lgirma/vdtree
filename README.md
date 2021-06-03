@@ -1,10 +1,10 @@
 # vdtree
 
-Virtual DOM tree utility.
+Compile abstract web components to DOM, react, svelte and more
 
 * Create abstract components 
-* Render them to HTML/JS or React or SSR, etc.
-* Small < 1 kb
+* Bridge for HTML/JS, React, Svelte, SSR, etc.
+* Small (~ 1 kb)
 
 ## Installation
 
@@ -22,7 +22,13 @@ yarn add vdtree
 
 ## Getting Started
 
-Create a virtual `<div />` using:
+Use the `vd()` method to create abstract DOM tree.
+
+```typescript
+vd(tag, attributes, children)
+```
+
+For example, to create a virtual `<div />`
 
 ```typescript
 import {vd} from 'vdtree'
@@ -30,34 +36,58 @@ import {vd} from 'vdtree'
 const comp = vd('div')
 ```
 
-To create an `<img>`:
+To create the `<div>` with children,
 
 ```typescript
-const comp = vd('img', {class: 'active', src: './image.jpg'})
-```
-
-To more complicated virtual dom tree:
-
-```typescript
-const comp = vd('p', {class: 'para'}, [
-    vd('i', {class: 'fas fa-eye'}),
-    'Looking in',
-    vd('a', {href: 'http://link.com/eyes'}, 'here')
+vd('div', {class: 'container'}, [
+    vd('div', {}, 'item1'),
+    vd('div', {}, 'item2')
 ])
 ```
 
 which is an equivalent of:
 
 ```html
-<p class="para">
+<div class="container">
+    <div>item1</div>
+    <div>item2</div>
+</div>
+```
+
+To create an `<img>`:
+
+```typescript
+vd('img', {class: 'active', src: './image.jpg'})
+```
+
+which is an equivalent of:
+
+```html
+<img class="active" src="./image.jpg">
+```
+
+To more complicated virtual dom tree:
+
+```typescript
+vd('p', {class: 'card'}, [
+    vd('i', {class: 'fas fa-eye'}),
+    'Looking in',
+    vd('a', {href: 'http://link.com/eyes', style: {color: 'red'}}, 'here')
+])
+```
+
+which is an equivalent of:
+
+```html
+<p class="card">
     <i class="fas fa-eye" />
-    Looking in <a href="http://link.com/eyes">here</a>
+    Looking in <a href="http://link.com/eyes" style="color:red">here</a>
 </p>
 ```
 
 ## Event Handlers
 
-You can use event handlers as you would using the JS DOM APIs
+You can use event handlers, as you would, using the JS DOM APIs
 
 ```typescript
 vd('div', {
@@ -71,15 +101,17 @@ vd('form', { onsubmit: e => e.preventDefault() }, [
 ])
 ```
 
+All valid DOM events can be used. [See](https://developer.mozilla.org/en-US/docs/Web/Events).
+
 ## Rendering to Actual DOM
 
 To render static abstract DOM into an actual DOM in the browser,
 
 ```typescript
-import {toHtmlDom, vd} from 'vdtree'
+import {toDom, vd} from 'vdtree'
 
 const abstractElt = vd('div', {}, 'Hello, World!')
-document.appendChild(toHtmlDom(abstractElt))
+document.appendChild(toDom(abstractElt))
 ```
 
 ## To React
@@ -120,3 +152,18 @@ const ReactGreeter = toReactComponent(React.createElement, AbstractGreeter)
 ReactDOM.render(<ReactGreeter name="React"/>, 
     document.getElementById('app')!)
 ```
+
+## To Server-Side Rendered (SSR) HTML
+
+To get an HTML string from an abstract dom tree,
+
+```typescript jsx
+import {toHtmlString} from "vdtree"
+
+const htmlString = toHtmlString(
+    vd('div', {}, 'Hello, World')
+)
+```
+
+## To Svelte Component
+
