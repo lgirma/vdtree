@@ -6,6 +6,17 @@ Compile abstract web components to DOM, react, svelte and more
 * Bridge for HTML/JS, React, Svelte, SSR, etc.
 * Small (~ 1 kb)
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Event Handlers](#event-handlers)
+- [Custom Components](#custom-components)
+- [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
+- [React](#react)
+- [SSR](#to-server-side-rendered-ssr-html)
+- [Svelte](#svelte)
+
 ## Installation
 
 Install vdtree from npm
@@ -183,10 +194,10 @@ const Counter = ({count = 0}) => vd('div', {}, [
     vd('button', {onclick: onIncrement}, '+')
 ])
 
-let watch = vdRender(vd(Counter, {}), document.getElementById('app')!)
+let watch = vdRender(vd(Counter), document.getElementById('app')!)
 ```
 
-## To React
+## React
 
 To render a static virtual DOM tree in a react component,
 
@@ -281,6 +292,6 @@ which will output:
 <div>Item 2</div>
 ```
 
-## To Svelte Component
+## Svelte
 
 TBD
