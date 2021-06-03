@@ -103,7 +103,35 @@ vd('form', { onsubmit: e => e.preventDefault() }, [
 
 All valid DOM events can be used. [See](https://developer.mozilla.org/en-US/docs/Web/Events).
 
-## Rendering to Actual DOM
+## Custom Components
+
+Lazy evaluated custom components can be used in the abstract DOM.
+
+A simple custom component:
+
+```typescript
+const Greeter = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
+```
+
+or as a full-blown function:
+
+```typescript
+function Greeter({name = ''}) {
+    return vd('div', {}, `Hello, ${name}`)
+}
+```
+
+Custom components can also be included in the virtual DOM tree as:
+
+```typescript
+vd('div', {}, [
+    'Greetings output',
+    vd(Greeter, {name: 'John'}),
+    vd('hr')
+])
+```
+
+## Rendering to the browser DOM
 
 To render static abstract DOM into an actual DOM in the browser,
 
@@ -111,7 +139,7 @@ To render static abstract DOM into an actual DOM in the browser,
 import {toDomElement, vd} from 'vdtree'
 
 const abstractElt = vd('div', {}, 'Hello, World!')
-document.appendChild(toDomElement(abstractElt))
+document.body.append(toDomElement(abstractElt))
 ```
 
 If you want to render multiple root-level elements, use `toDom`
@@ -123,7 +151,7 @@ const abstractElts = [
     vd('div', {}, 'Element 1'),
     vd('div', {}, 'Element 2')
 ]
-document.append(...toDom(abstractElts))
+document.body.append(...toDom(abstractElts))
 ```
 
 ## To React

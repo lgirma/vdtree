@@ -6,13 +6,14 @@ const app = express()
 let port = 8585
 
 app.get('/', (req, res) => {
-    res.send(toHtmlString(
+    res.send(toHtmlString([
         vd('div', {}, [
             'Hello ',
             vd('span', {style: {color: 'red', 'text-decoration': 'underline'}}, 'SSR'),
             ', World!'
-        ])
-    ))
+        ]),
+        vd('div', {}, 'Line 2')
+    ]))
 })
 
 app.listen(port, () => {
