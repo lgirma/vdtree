@@ -108,10 +108,22 @@ All valid DOM events can be used. [See](https://developer.mozilla.org/en-US/docs
 To render static abstract DOM into an actual DOM in the browser,
 
 ```typescript
-import {toDom, vd} from 'vdtree'
+import {toDomElement, vd} from 'vdtree'
 
 const abstractElt = vd('div', {}, 'Hello, World!')
-document.appendChild(toDom(abstractElt))
+document.appendChild(toDomElement(abstractElt))
+```
+
+If you want to render multiple root-level elements, use `toDom`
+
+```typescript
+import {toDom, vd} from 'vdtree'
+
+const abstractElts = [
+    vd('div', {}, 'Element 1'),
+    vd('div', {}, 'Element 2')
+]
+document.append(...toDom(abstractElts))
 ```
 
 ## To React

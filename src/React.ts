@@ -4,7 +4,7 @@ export function toJsxElement<T extends JSX.Element>(reactCreateElement: any, roo
     let attrs: any = {}
     if (key != null) attrs.key = key;
     const rootAttrs = {...root.attrs}
-    for (const k in Object.keys(rootAttrs)) {
+    for (const k of Object.keys(rootAttrs)) {
         const v = rootAttrs[k]
         if (k === 'class') attrs.className = v
         //else if (k == 'style') attrs.style = v

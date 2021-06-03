@@ -1,4 +1,4 @@
-import {Nullable} from "boost-web-core";
+import {isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
 
 export type AbstractDomNode = AbstractDomElement|string
 
@@ -6,11 +6,13 @@ export type DomElementChildren = AbstractDomNode[]
 
 export type DomElementChildrenFrom = Nullable<AbstractDomNode>|Nullable<AbstractDomNode>[]
 
-export interface AbstractDomElement {
-    tag: PrimitiveComponent|CustomComponent
+export interface AbstractDomElement<TagType extends PrimitiveComponent|AbstractDomComponent|CustomComponent = any> {
+    tag: TagType
     attrs: {[p: string]: any}
     children: DomElementChildren
 }
+
+export type AbstractDomComponent<TProps = any> = (props: TProps, children?: any) => OneOrMany<AbstractDomNode>
 
 export type CustomComponent = any
 export type PrimitiveComponent = keyof HTMLElementTagNameMap
@@ -33,7 +35,7 @@ export type PrimitiveComponent = keyof HTMLElementTagNameMap
  * <p>Here is a <a href="http://www.google.com/">link</a>.</p>
  * ```
  */
-export function vd(tag: PrimitiveComponent|CustomComponent,
+export function vd(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
                    attrs:{[key: string]: any} = {},
                    children: DomElementChildrenFrom = null) : AbstractDomElement {
     const elt: AbstractDomElement = {tag, attrs: {}, children: []}
@@ -55,4 +57,11 @@ export function vd(tag: PrimitiveComponent|CustomComponent,
         }
     }
     return elt
+}
+
+export function evalLazyElement(comp: AbstractDomElement): AbstractDomNode[] {
+    if (isFunc(comp.tag)) {
+        return toArray((comp.tag as AbstractDomComponent)(comp.attrs, comp.children))
+    }
+    return [comp]
 }
