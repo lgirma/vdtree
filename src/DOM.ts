@@ -1,11 +1,12 @@
 import {BOOL_ATTRS} from "./Common";
 import {AbstractDomElement} from "./AbstractDOM";
+import {isFunc} from "boost-web-core";
 /*// @ts-ignore
 import {DiffDOM} from "diff-dom";
 const dd = new DiffDOM({valueDiffing: false});*/
 
 
-export function toHtmlDom<T extends HTMLElement>(root: AbstractDomElement, domDocument?: HTMLDocument): T {
+export function toDom<T extends HTMLElement>(root: AbstractDomElement, domDocument?: HTMLDocument): T {
     const result = (domDocument ?? document).createElement(root.tag) as HTMLElement
     for (const k in root.attrs) {
         const val = root.attrs[k]
@@ -16,7 +17,7 @@ export function toHtmlDom<T extends HTMLElement>(root: AbstractDomElement, domDo
                     result.style.setProperty(sk, `${sv}`);
             }
         }
-        else if (typeof(val) === 'function') {
+        else if (isFunc(val)) {
             result.addEventListener(k.substr(2, k.length - 2), val)
         }
         else if (BOOL_ATTRS.indexOf(k) > -1) {
@@ -30,7 +31,7 @@ export function toHtmlDom<T extends HTMLElement>(root: AbstractDomElement, domDo
             if (typeof child === 'string')
                 result.append(child)
             else {
-                result.appendChild(toHtmlDom(child, domDocument))
+                result.appendChild(toDom(child, domDocument))
             }
         }
     }
