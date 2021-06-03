@@ -193,16 +193,60 @@ ReactDOM.render(<ReactGreeter name="React"/>,
     document.getElementById('app')!)
 ```
 
+You can also include abstract components in React components
+
+```typescript jsx
+const AbstractCounterInfo = ({count = 0}) => vd('div', {}, `${count}`)
+
+const CounterInfo = toReactComponent(React.createElement, AbstractCounterInfo)
+
+function ReactCounter({startWith = 0}) {
+    const [c, setC] = useState(startWith)
+    return <div>
+        <CounterInfo count={c} />
+        <button onClick={e => setC(prev => prev+1)}>+</button>
+    </div>
+}
+
+ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app')!)
+```
+
+The opposite is also possible. That is, including React components in abstract components
+
+```typescript jsx
+import { Button } from "@chakra-ui/react"
+
+vd('div', {}, [
+    vd(Button, {colorScheme: 'blue'}, 'Click Me')
+])
+```
+
 ## To Server-Side Rendered (SSR) HTML
 
 To get an HTML string from an abstract dom tree,
 
-```typescript jsx
+```typescript
 import {toHtmlString} from "vdtree"
 
 const htmlString = toHtmlString(
     vd('div', {}, 'Hello, World')
 )
+```
+
+Multiple top-level elements can also be used as
+
+```typescript
+toHtmlString([
+    vd('div', {}, 'Item 1'),
+    vd('div', {}, 'Item 2'),
+])
+```
+
+which will output:
+
+```html
+<div>Item 1</div>
+<div>Item 2</div>
 ```
 
 ## To Svelte Component

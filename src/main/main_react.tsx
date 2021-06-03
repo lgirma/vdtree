@@ -3,10 +3,25 @@ import {vd} from "../AbstractDOM";
 import {toJsxElement, toReactComponent} from "../React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import {useState} from "react";
 
-const AbstractGreeter = ({name = ''}) =>
-    vd('div', {class: 'active'}, `Hello, ${name}`)
-const ReactGreeter = toReactComponent(React.createElement, AbstractGreeter)
+const Redness = ({val = 0}) => <span style={{color: `rgb(${val}, 0, 0)`}}>Redness</span>
 
-ReactDOM.render(<ReactGreeter name="React vd-tree"/>, document.getElementById('app')!)
+const AbstractCounterInfo = ({count = 0}) => vd('div', {}, [
+    `${count} - `,
+    vd(Redness, {val: count})
+])
+
+const CounterInfo = toReactComponent(React.createElement, AbstractCounterInfo)
+
+function ReactCounter({startWith = 0}) {
+    const [c, setC] = useState(startWith)
+    return <div>
+        <CounterInfo count={c} />
+        <button onClick={e => setC(prev => prev+20)}>+</button>
+        <button onClick={e => setC(prev => prev-20)}>-</button>
+    </div>
+}
+
+ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app')!)
 
