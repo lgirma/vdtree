@@ -1,22 +1,20 @@
-// @ts-ignore
-import {createServer} from 'http'
+import express from 'express';
 import {toHtmlString} from "../SSR";
 import {vd} from "../AbstractDOM";
 
-const server = createServer(function (req: any, res: any) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Request-Method', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Content-Type', 'text/html');
-    res.writeHead(200);
-    if ( req.method === 'OPTIONS' ) {
-        res.end();
-        return;
-    }
-    res.write(toHtmlString(
-        vd('div', {}, 'Hello, SSR World!')
-    ));
-    res.end();
-});
-server.listen(8585);
+const app = express()
+let port = 8585
+
+app.get('/', (req, res) => {
+    res.send(toHtmlString(
+        vd('div', {}, [
+            'Hello ',
+            vd('span', {style: {color: 'red', 'text-decoration': 'underline'}}, 'SSR'),
+            ', World!'
+        ])
+    ))
+})
+
+app.listen(port, () => {
+    console.log(`SSR sample app listening at http://localhost:${port}`)
+})
