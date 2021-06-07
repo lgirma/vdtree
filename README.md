@@ -2,8 +2,9 @@
 
 Compile abstract web components to DOM, react, svelte and more
 
-* Create your web components once; use them in vanilla JS, React, Svelte, SSR, etc.
+* Write your web components once; use them in vanilla JS, React, Svelte, SSR, etc.
 * Small (~ 1 kb without watches, ~ 6 kb for svelte)
+* Written in Typescript
 
 ## Table of Contents
 
@@ -42,7 +43,7 @@ Let's quickly create a simple abstract DOM tree and render it on the browser
 
 To the abstract DOM tree:
 
-```typescript
+```javascript
 import {vd} from 'vdtree'
 
 let myDomTree = vd('div', {}, 'Hello, World!')
@@ -51,13 +52,13 @@ let myDomTree = vd('div', {}, 'Hello, World!')
 Then to render it on the browser DOM:
 
 **Vanilla Javascript**:
-```typescript
+```javascript
 import {toDomElement} from 'vdtree'
 document.body.append(toDomElement(myDomTree))
 ```
 
 **React**:
-```typescript jsx
+```jsx
 import {toReactComponent} from 'vdtree'
 
 const MyReactComp = toReactComponent(myDomTree, React)
@@ -65,7 +66,7 @@ ReactDOM.render(<MyReactComp />, document.getElementById('app')!)
 ```
 
 **Svelte**:
-```sveltehtml
+```jsx
 <script>
   import {SvelteComponent} from 'vdtree'
 </script>
@@ -74,7 +75,7 @@ ReactDOM.render(<MyReactComp />, document.getElementById('app')!)
 ```
 
 **SSR**:
-```typescript
+```javascript
 import {toHtmlString} from 'vdtree'
 console.log(
     toHtmlString(myDomTree)
@@ -85,14 +86,14 @@ console.log(
 
 An abstract greeter component is a pure function that accepts name as a prop and greets with that name.
 
-```typescript
+```javascript
 const AbstractGreeter = 
         props => vd('div', {}, `Hello, ${props.name}`)
 ```
 Then to render it on the browser DOM:
 
 **Vanilla Javascript**:
-```typescript
+```javascript
 import {toDomElement} from 'vdtree'
 
 document.body.append(toDomElement(
@@ -101,7 +102,7 @@ document.body.append(toDomElement(
 ```
 
 **React**:
-```typescript jsx
+```jsx
 import {toReactComponent} from 'vdtree'
 
 const GreeterReact = toReactComponent(AbstractGreeter, React)
@@ -109,7 +110,7 @@ ReactDOM.render(<GreeterReact name="React" />, document.getElementById('app')!)
 ```
 
 **Svelte**:
-```sveltehtml
+```jsx
 <script>
   import {SvelteComponent} from 'vdtree'
 </script>
@@ -118,7 +119,7 @@ ReactDOM.render(<GreeterReact name="React" />, document.getElementById('app')!)
 ```
 
 **SSR**:
-```typescript
+```javascript
 import {toHtmlString} from 'vdtree'
 
 console.log(toHtmlString(
@@ -130,13 +131,13 @@ console.log(toHtmlString(
 
 Use the `vd()` method (signifying "virtual dom") to create an abstract DOM tree.
 
-```typescript
+```javascript
 vd(tag, attributes, children)
 ```
 
 For example, to create a virtual `<div />`
 
-```typescript
+```javascript
 import {vd} from 'vdtree'
 
 const comp = vd('div')
@@ -144,7 +145,7 @@ const comp = vd('div')
 
 To create the `<div>` with attributes and children,
 
-```typescript
+```javascript
 vd('div', {class: 'container'}, [
     vd('div', {}, 'item1'),
     vd('div', {}, 'item2')
@@ -162,7 +163,7 @@ which is an equivalent of:
 
 To create an `<img>`:
 
-```typescript
+```javascript
 vd('img', {class: 'active', src: './image.jpg'})
 ```
 
@@ -174,7 +175,7 @@ which is an equivalent of:
 
 To more complicated virtual dom tree:
 
-```typescript
+```javascript
 vd('p', {class: 'card'}, [
     vd('i', {class: 'fas fa-eye'}),
     'Looking in',
@@ -195,23 +196,23 @@ which is an equivalent of:
 
 You can pass `style` as a string or as a javascript object
 
-```typescript
+```javascript
 vd('p', {style: 'color: red; border-color: green'})
 ```
 
 would be the same as
 
-```typescript
+```javascript
 vd('p', {style: {color: 'red', borderColor: 'green'}})
 ```
 
-**Note:** Both will work in React using the `toJsxElement` or `toReactComponent`. [See 'React' Below](#react)
+**Note:** Both will work in React using the `toReactComponent` method. [See 'React' Below](#react)
 
 ## Event Handlers
 
 You can use event handlers, as you would, using the JS DOM APIs
 
-```typescript
+```javascript
 vd('div', {
     onclick: e => alert('Clicked!')
 })
@@ -231,13 +232,13 @@ Lazy evaluated custom components can be used in the abstract DOM.
 
 A simple custom component:
 
-```typescript
+```javascript
 const Greeter = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
 ```
 
 or as a full-blown function:
 
-```typescript
+```javascript
 function Greeter({name = ''}) {
     return vd('div', {}, `Hello, ${name}`)
 }
@@ -245,7 +246,7 @@ function Greeter({name = ''}) {
 
 Custom components can also be included in the virtual DOM tree as:
 
-```typescript
+```javascript
 vd('div', {}, [
     'Greetings output',
     vd(Greeter, {name: 'John'}),
@@ -257,7 +258,7 @@ vd('div', {}, [
 
 To render static abstract DOM into an actual DOM in the browser,
 
-```typescript
+```javascript
 import {toDomElement, vd} from 'vdtree'
 
 const abstractElt = vd('div', {}, 'Hello, World!')
@@ -266,7 +267,7 @@ document.body.append(toDomElement(abstractElt))
 
 If you want to render multiple root-level elements, use `toDom`
 
-```typescript
+```javascript
 import {toDom, vd} from 'vdtree'
 
 const abstractElts = [
@@ -278,7 +279,7 @@ document.body.append(...toDom(abstractElts))
 
 To enable watch and update on the DOM when values change, use `renderToDom()` method
 
-```typescript
+```javascript
 // First time render
 const watch = renderToDom(
     vd(MyComponent, props1), targetElement
@@ -294,9 +295,9 @@ Rather than doing a complete replacement, it will patch the changes efficiently.
 
 A complete example:
 
-```typescript
+```javascript
 let c = 0
-function onIncrement(e: Event) {
+function onIncrement(e) {
     watch.update(vd(Counter, {count: c++}))
 }
 
@@ -310,38 +311,33 @@ let watch = renderToDom(vd(Counter), document.getElementById('app')!)
 
 ## React
 
-To render a static virtual DOM tree in a react component,
+To render a static virtual DOM tree in a react component, use the `toReactComponent()` method.
 
-```typescript jsx
-import {toJsxElement} from "vdtree"
+```jsx
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import {toReactComponent} from "vdtree"
 
 const abstractComp = vd('div', {}, 'Hello, World!')
-const MyReactComp = (props) => toJsxElement(abstractComp)
+const MyReactComp = toReactComponent(abstractComp, React)
 
 ReactDOM.render(<MyReactComp />,
     document.getElementById('app')!)
 ```
 
-But most of the time, we would want a dynamic content rather than a static one.
-In such cases, use `toReactComponent` rather than `toJsxElement`
-
-```typescript
-toReactComponent(React.createElement, abstractComp)
-```
-
-where the `abstractComp` can be a function that returns an abstract component
+Note that we had to pass `React` object as the second argument for `toReactComponent()` method.
 
 A simple greeter example,
 
-```typescript jsx
-import {toReactComponent, vd} from 'vdtree'
+```jsx
 import React from 'react'
 import ReactDOM from 'react-dom'
+import {toReactComponent, vd} from 'vdtree'
 
 const AbstractGreeter = ({name = ''}) =>
     vd('div', {class: 'active'}, `Hello, ${name}`)
 
-const ReactGreeter = toReactComponent(React.createElement, AbstractGreeter)
+const ReactGreeter = toReactComponent(AbstractGreeter, React)
 
 ReactDOM.render(<ReactGreeter name="React"/>, 
     document.getElementById('app')!)
@@ -349,10 +345,10 @@ ReactDOM.render(<ReactGreeter name="React"/>,
 
 You can also include abstract components in React components
 
-```typescript jsx
+```jsx
 const AbstractCounterInfo = ({count = 0}) => vd('div', {}, `${count}`)
 
-const CounterInfo = toReactComponent(React.createElement, AbstractCounterInfo)
+const CounterInfo = toReactComponent(AbstractCounterInfo, React)
 
 function ReactCounter({startWith = 0}) {
     const [c, setC] = useState(startWith)
@@ -367,7 +363,7 @@ ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app')!)
 
 The opposite is also possible. That is, including React components in abstract components
 
-```typescript jsx
+```jsx
 import { Button } from "@chakra-ui/react"
 
 vd('div', {}, [
@@ -379,7 +375,7 @@ vd('div', {}, [
 
 To get an HTML string from an abstract dom tree,
 
-```typescript
+```javascript
 import {toHtmlString} from "vdtree"
 
 const htmlString = toHtmlString(
@@ -389,7 +385,7 @@ const htmlString = toHtmlString(
 
 Multiple top-level elements can also be used as
 
-```typescript
+```javascript
 toHtmlString([
     vd('div', {}, 'Item 1'),
     vd('div', {}, 'Item 2'),
@@ -407,7 +403,7 @@ which will output:
 
 You can use the abstract DOM in a svelte component using `SvelteComponent` import
 
-```sveltehtml
+```jsx
 <script>
     import {vd, SvelteComponent} from 'vdtree'
     
@@ -420,7 +416,7 @@ You can use the abstract DOM in a svelte component using `SvelteComponent` impor
 You can also use an abstract component inside the svelte component.
 A simple counter example:
 
-```sveltehtml
+```jsx
 <script>
     let count = 0
     const AbstractCounterInfo = ({c = 1}) => vd('div', {}, `${c}`)
@@ -432,7 +428,7 @@ A simple counter example:
 
 You can also use event handling as
 
-```sveltehtml
+```jsx
 <SvelteComponent dom={vd('button', {onclick: e => alert('Clicked!')}, 'Click Me')} />
 ```
 
