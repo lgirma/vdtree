@@ -10,6 +10,7 @@ Compile abstract web components to DOM, react, svelte and more
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
+- [Styles](#styles)
 - [Event Handlers](#event-handlers)
 - [Custom Components](#custom-components)
 - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
@@ -95,6 +96,22 @@ which is an equivalent of:
     Looking in <a href="http://link.com/eyes" style="color:red">here</a>
 </p>
 ```
+
+## Styles
+
+You can pass `style` as a string or as a javascript object
+
+```typescript
+vd('p', {style: 'color: red; border-color: green'})
+```
+
+would be the same as
+
+```typescript
+vd('p', {style: {color: 'red', borderColor: 'green'}})
+```
+
+**Note:** Both will work in React using the `toJsxElement` or `toReactComponent`. [See 'React' Below](#react)
 
 ## Event Handlers
 

@@ -45,10 +45,14 @@ describe('SSR Tests', () => {
     })
 
     it('Generates style HTML attribute properly', () => {
-        let abstractTree = vd('div', {style: {color:'red', borderColor: 'red'}})
+        let divWithJSStyle = vd('div', {style: {color:'red', borderColor: 'red'}})
+        let divWithStringStyle = vd('div', {style: 'color:red;border-color:red;'})
 
-        expect(toHtmlString(abstractTree)).to.equal(
+        expect(toHtmlString(divWithJSStyle)).to.equal(
             '<div style="color: red;border-color: red;"></div>')
+
+        expect(toHtmlString(divWithStringStyle)).to.equal(
+            '<div style="color:red;border-color:red;"></div>')
     })
 
     it('Generates void elements properly', () => {

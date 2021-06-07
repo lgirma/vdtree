@@ -24,6 +24,21 @@ describe('React Tests', () => {
         expect(jsxElt.props.children[2]).to.equal('child-3')
     })
 
+    it('Generates style attributes properly', () => {
+        let divWithJSStyle = vd('div', {style: {color:'red', borderColor: 'red', MsTransform: 'rotate(10deg)'}})
+        let divWithStringStyle = vd('div', {style: 'color:red; border-color:red; -ms-transform: rotate(10deg);'})
+
+        let jsxJs = toJsxElement(divWithJSStyle, React)
+        let jsxString = toJsxElement(divWithStringStyle, React)
+
+        expect(jsxJs.props.style.color).to.equal('red')
+        expect(jsxJs.props.style.borderColor).to.equal('red')
+        expect(jsxJs.props.style.MsTransform).to.equal('rotate(10deg)')
+        expect(jsxString.props.style.color).to.equal('red')
+        expect(jsxString.props.style.borderColor).to.equal('red')
+        expect(jsxString.props.style.MsTransform).to.equal('rotate(10deg)')
+    })
+
     it('Generates JSX from lazy components properly', () => {
         let lazyComponent = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
         let abstractTree = vd('div', {}, [
