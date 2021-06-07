@@ -9,7 +9,19 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": true,
   },
   "include": ["src/**/*.d.ts", "src/**/*.d.tsx", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }
