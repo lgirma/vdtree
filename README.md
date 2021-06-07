@@ -2,13 +2,15 @@
 
 Compile abstract web components to DOM, react, svelte and more
 
-* Create abstract components 
-* Bridge for HTML/JS, React, Svelte, SSR, etc.
-* Small (~ 1 kb)
+* Create your web components once; use them in vanilla JS, React, Svelte, SSR, etc.
+* Small (~ 1 kb without watches, ~ 6 kb for svelte)
 
 ## Table of Contents
 
 - [Installation](#installation)
+- [Tutorials](#quick-start-tutorials)
+    - [Hello World](#hello-world)
+    - [Greeter](#greeter)
 - [Getting Started](#getting-started)
 - [Styles](#styles)
 - [Event Handlers](#event-handlers)
@@ -32,9 +34,101 @@ or
 yarn add vdtree
 ```
 
+## Quick-Start Tutorials
+
+### Hello World
+
+Let's quickly create a simple abstract DOM tree and render it on the browser
+
+To the abstract DOM tree:
+
+```typescript
+import {vd} from 'vdtree'
+
+let myDomTree = vd('div', {}, 'Hello, World!')
+```
+
+Then to render it on the browser DOM:
+
+**Vanilla Javascript**:
+```typescript
+import {toDomElement} from 'vdtree'
+document.body.append(toDomElement(myDomTree))
+```
+
+**React**:
+```typescript jsx
+import {toReactComponent} from 'vdtree'
+
+const MyReactComp = toReactComponent(myDomTree, React)
+ReactDOM.render(<MyReactComp />, document.getElementById('app')!)
+```
+
+**Svelte**:
+```sveltehtml
+<script>
+  import {SvelteComponent} from 'vdtree'
+</script>
+
+<SvelteComponent dom={myDomTree} />
+```
+
+**SSR**:
+```typescript
+import {toHtmlString} from 'vdtree'
+console.log(
+    toHtmlString(myDomTree)
+)
+```
+
+### Greeter
+
+An abstract greeter component is a pure function that accepts name as a prop and greets with that name.
+
+```typescript
+const AbstractGreeter = 
+        props => vd('div', {}, `Hello, ${props.name}`)
+```
+Then to render it on the browser DOM:
+
+**Vanilla Javascript**:
+```typescript
+import {toDomElement} from 'vdtree'
+
+document.body.append(toDomElement(
+    vd(AbstractGreeter, {name: 'Vanilla JS'})
+))
+```
+
+**React**:
+```typescript jsx
+import {toReactComponent} from 'vdtree'
+
+const GreeterReact = toReactComponent(AbstractGreeter, React)
+ReactDOM.render(<GreeterReact name="React" />, document.getElementById('app')!)
+```
+
+**Svelte**:
+```sveltehtml
+<script>
+  import {SvelteComponent} from 'vdtree'
+</script>
+
+<SvelteComponent dom={AbstractGreeter} props={{name: 'Svelte'}} />
+```
+
+**SSR**:
+```typescript
+import {toHtmlString} from 'vdtree'
+
+console.log(toHtmlString(
+    vd(AbstractGreeter, {name: 'SSR'})
+))
+```
+
 ## Getting Started
 
-Use the `vd()` method to create abstract DOM tree.
+Use the `vd()` method (signifying "virtual dom") to create an abstract DOM tree.
 
 ```typescript
 vd(tag, attributes, children)
@@ -48,7 +142,7 @@ import {vd} from 'vdtree'
 const comp = vd('div')
 ```
 
-To create the `<div>` with children,
+To create the `<div>` with attributes and children,
 
 ```typescript
 vd('div', {class: 'container'}, [
@@ -182,11 +276,11 @@ const abstractElts = [
 document.body.append(...toDom(abstractElts))
 ```
 
-To enable watch and update on the DOM when values change, use `vdRender()` method
+To enable watch and update on the DOM when values change, use `renderToDom()` method
 
 ```typescript
 // First time render
-const watch = vdRender(
+const watch = renderToDom(
     vd(MyComponent, props1), targetElement
 )
 
@@ -211,7 +305,7 @@ const Counter = ({count = 0}) => vd('div', {}, [
     vd('button', {onclick: onIncrement}, '+')
 ])
 
-let watch = vdRender(vd(Counter), document.getElementById('app')!)
+let watch = renderToDom(vd(Counter), document.getElementById('app')!)
 ```
 
 ## React
@@ -311,4 +405,35 @@ which will output:
 
 ## Svelte
 
-TBD
+You can use the abstract DOM in a svelte component using `SvelteComponent` import
+
+```sveltehtml
+<script>
+    import {vd, SvelteComponent} from 'vdtree'
+    
+    let myDom = vd('div', {}, 'Content')
+</script>
+
+<SvelteComponent dom={myDom} />
+```
+
+You can also use an abstract component inside the svelte component.
+A simple counter example:
+
+```sveltehtml
+<script>
+    let count = 0
+    const AbstractCounterInfo = ({c = 1}) => vd('div', {}, `${c}`)
+</script>
+
+<SvelteComponent dom={AbstractCounterInfo} props={{c: count}} />
+<button on:click={e => count = count+1}>+</button>
+```
+
+You can also use event handling as
+
+```sveltehtml
+<SvelteComponent dom={vd('button', {onclick: e => alert('Clicked!')}, 'Click Me')} />
+```
+
+**Note**: The `SvelteComponent` will always create a top-level `<div>` tag.
