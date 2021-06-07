@@ -43,9 +43,8 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
             if (k === 'style' && typeof(val) === 'object') {
                 for (const sk of Object.keys(val)) {
                     const sv = val[sk]
-                    console.log('Style Entry', [sk, sv])
                     if (sv != null)
-                        result.style.setProperty(sk, `${sv}`);
+                        result.style[sk as any] = sv;
                 }
             }
             else if (isFunc(val)) {

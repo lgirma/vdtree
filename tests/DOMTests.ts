@@ -24,11 +24,23 @@ describe('DOM Tests', () => {
     })
 
     it('Generates style HTML attribute properly', () => {
-        let abstractTree = vd('div', {style: {color:'red', 'border-color': 'red'}})
+        let abstractTree = vd('div', {style: {color:'red', borderColor: 'red'}})
         let domElt = toDomElement<HTMLDivElement>(abstractTree)
 
         expect(domElt.style.color).to.equal('red')
         expect(domElt.style.borderColor).to.equal('red')
+    })
+
+    it('Generates HTML string for lazy components', () => {
+        let lazyComponent = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
+        let comp = vd('div', {}, [
+            vd(lazyComponent, {name: 'vd-tree'}),
+            vd('a', {href: '#'}, 'Link')
+        ])
+
+        expect(toDomElement<HTMLDivElement>(comp).outerHTML).to.equal(
+            '<div><div>Hello, vd-tree</div><a href="#">Link</a></div>'
+        )
     })
 
     it('Generates multi-top-level elements properly', () => {

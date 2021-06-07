@@ -1,6 +1,6 @@
 import '../style.css'
 import {vd} from "../AbstractDOM";
-import {toJsxElement, toReactComponent} from "../React";
+import {toReactComponent} from "../React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {useState} from "react";
@@ -12,7 +12,7 @@ const AbstractCounterInfo = ({count = 0}) => vd('div', {}, [
     vd(Redness, {val: count})
 ])
 
-const CounterInfo = toReactComponent(React.createElement, AbstractCounterInfo)
+const CounterInfo = toReactComponent(AbstractCounterInfo, React)
 
 function ReactCounter({startWith = 0}) {
     const [c, setC] = useState(startWith)

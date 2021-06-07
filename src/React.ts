@@ -1,6 +1,7 @@
 import {AbstractDomElement} from "./AbstractDOM";
 
-export function toJsxElement<T extends JSX.Element>(reactCreateElement: any, root: AbstractDomElement, key?: any): T {
+export function toJsxElement<T extends JSX.Element>(root: AbstractDomElement, React: any, key?: any): T {
+    const {createElement, Fragment} = React
     let attrs: any = {}
     if (key != null) attrs.key = key;
     const rootAttrs = {...root.attrs}
@@ -18,19 +19,19 @@ export function toJsxElement<T extends JSX.Element>(reactCreateElement: any, roo
         else attrs[k] = v
     }
     if (root.children && root.children.length > 1)
-        return reactCreateElement(root.tag, attrs,
-            ...root.children.map((c) => (typeof (c) === 'string' || c == null) ? c : toJsxElement(reactCreateElement, c)))
+        return createElement(root.tag, attrs,
+            ...root.children.map((c) => (typeof (c) === 'string' || c == null) ? c : toJsxElement(c, React)))
     else if (root.children && root.children.length == 1) {
         let c = root.children[0]
         if (root.tag === 'textarea')
-            return reactCreateElement(root.tag, {...attrs, defaultValue: c})
+            return createElement(root.tag, {...attrs, defaultValue: c})
         else
-            return reactCreateElement(root.tag, attrs, (typeof(c) === 'string' || c == null) ? c : toJsxElement(reactCreateElement, c))
+            return createElement(root.tag, attrs, (typeof(c) === 'string' || c == null) ? c : toJsxElement(c, React))
     }
     else
-        return reactCreateElement(root.tag, attrs)
+        return createElement(root.tag, attrs)
 }
 
-export function toReactComponent<TProps, T extends JSX.Element>(reactCreateElement: any, vdComponent: (props: TProps) => AbstractDomElement, key?: any): ((props: TProps) => T) {
-    return (props: TProps) => toJsxElement<T>(reactCreateElement, vdComponent(props), key)
+export function toReactComponent<TProps, T extends JSX.Element>(vdComponent: (props: TProps) => AbstractDomElement, React: any, key?: any): ((props: TProps) => T) {
+    return (props: TProps) => toJsxElement<T>(vdComponent(props), React, key)
 }
