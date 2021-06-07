@@ -1,4 +1,4 @@
-import {AbstractDomElement, evalLazyElement} from "./AbstractDOM";
+import {AbstractDomElement} from "./AbstractDOM";
 import {isFunc, OneOrMany, toArray} from "boost-web-core";
 
 const camelize = (str: string): string =>  str.replace(/-([a-z])/gi,(s, group) =>  group.toUpperCase());
@@ -51,6 +51,8 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
         return createElement(root.tag, attrs)
 }
 
-export function toReactComponent<TProps, T extends JSX.Element>(vdComponent: (props: TProps) => AbstractDomElement, React: any, key?: any): ((props: TProps) => T) {
-    return (props: TProps) => toJsxElement<T>(vdComponent(props), React, key)
+export function toReactComponent<TProps, T extends JSX.Element>(vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
+    if (isFunc(vdComponent))
+        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
+    return () => toJsxElement(vdComponent as any, React, key)
 }
