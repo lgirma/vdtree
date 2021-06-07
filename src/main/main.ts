@@ -1,6 +1,6 @@
 import '../style.css'
 import {AbstractDomElement, vd} from "../AbstractDOM";
-import {vdRender, toDom, toDomElement} from "../DOM";
+import {renderToDom, toDom, toDomElement} from "../DOM";
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 
@@ -14,4 +14,4 @@ const Counter = ({count = 0}) => vd('div', {}, [
     vd('button', {onclick: onIncrement}, '+')
 ])
 
-let watch = vdRender(vd(Counter, {}), document.body)
+let watch = renderToDom(vd(Counter, {}), document.body)

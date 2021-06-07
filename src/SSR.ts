@@ -38,7 +38,7 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): string {
         else if (BOOL_ATTRS.indexOf(k) > -1) {
             if (val) result += ` ${k}`
         }
-        result += ` ${k}="${val}"`
+        else result += ` ${k}="${val}"`
     }
     result += ">"
 

@@ -72,7 +72,11 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
     return results
 }
 
-export function vdRender(elt: AbstractDomElement, target: HTMLElement): { update(newElement: AbstractDomElement): any } {
+interface DomElementInstance {
+    update(newElt: AbstractDomElement): void
+}
+
+export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomElementInstance {
     target.append(toDomElement(elt))
     return {
         update(newElt: AbstractDomElement) {
