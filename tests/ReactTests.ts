@@ -47,9 +47,8 @@ describe('React Tests', () => {
 
         let jsxElt = toJsxElement(abstractTree, React)
         expect(jsxElt.type).to.equal('div')
-        expect(jsxElt.props.children.length).to.equal(1)
-        expect(jsxElt.props.children[0].type).to.equal('div')
-        expect(jsxElt.props.children[0].children).to.equal('Hello, React')
+        expect(typeof jsxElt.props.children.type).to.equal('function')
+        expect(jsxElt.props.children.props.name).to.equal('React')
     })
 
     it('Generates JSX for multi-top-level elements properly', () => {
@@ -59,6 +58,10 @@ describe('React Tests', () => {
         ]
 
         let jsxElt = toJsxElement(abstractTree, React)
+        expect(jsxElt.type).to.equal(React.Fragment)
+        expect(jsxElt.props.children.length).to.equal(2)
+        expect(jsxElt.props.children[0].props.children).to.equal('child-1')
+        expect(jsxElt.props.children[1].props.children).to.equal('child-2')
     })
 
 })
