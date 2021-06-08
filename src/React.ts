@@ -1,11 +1,10 @@
 import {AbstractDomElement} from "./AbstractDOM";
-import {isFunc, OneOrMany, toArray} from "boost-web-core";
+import {isFunc, OneOrMany, toArray, kebabToCamelCase} from "boost-web-core";
 
-const camelize = (str: string): string =>  str.replace(/-([a-z])/gi,(s, group) =>  group.toUpperCase());
 const styleToObject = (style: string): any => style.split(';').filter(s => s.length)
     .reduce((a, b) => {
         const keyValue = b.split(':');
-        a[camelize(keyValue[0]).trim()] = keyValue[1].trim();
+        a[kebabToCamelCase(keyValue[0]).trim()] = keyValue[1].trim();
         return a;
     }, {} as any);
 

@@ -9,7 +9,7 @@
 
 <h1>Counter</h1>
 <SvelteComponent dom={CounterInfo} props={{c: count}} />
-<button on:click={e => count = count+1}>+</button>
+<button on:click={e => count = count + 1}>+</button>
 
 <h1>Simple</h1>
 <SvelteComponent dom={vd('div', {}, [

@@ -4,7 +4,7 @@ import {
     AbstractDomNode,
     evalLazyElement, vd
 } from "./AbstractDOM";
-import {isArray, isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
+import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
 // @ts-ignore
 import {DiffDOM} from "diff-dom";
 const dd = new DiffDOM({valueDiffing: false});
@@ -72,14 +72,18 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
 }
 
 interface DomElementInstance {
+    $$element: AbstractDomElement
     update(newElt: AbstractDomElement): void
+    newAttrs(attrs: any): void
 }
 
 export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomElementInstance {
     target.append(toDomElement(elt))
     return {
+        $$element: elt,
         update(newElt: AbstractDomElement) {
-            const newDomElement = toDomElement(newElt, target.ownerDocument)
+            this.$$element = newElt
+            const newDomElement = toDomElement(this.$$element, target.ownerDocument)
             const patcher = (dest: any, src: any) => dd.apply(dest, dd.diff(dest, src))
             let success = patcher(target.firstChild!, newDomElement)
             if (!success) {
@@ -87,6 +91,13 @@ export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomEl
                 target.innerHTML = ''
                 target.append(newDomElement)
             }
+        },
+        newAttrs(attrs: Dict<any>|((prev: Dict<any>) => Dict<any>)) {
+            if (typeof attrs == 'function')
+                this.$$element.attrs = attrs(this.$$element.attrs)
+            else
+                this.$$element.attrs = attrs
+            this.update(this.$$element)
         }
     }
 }

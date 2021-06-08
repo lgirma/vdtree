@@ -1,14 +1,6 @@
 import {AbstractDomElement, AbstractDomNode, evalLazyElement} from "./AbstractDOM";
 import {BOOL_ATTRS, VOID_ELEMENTS} from "./Common";
-import {OneOrMany, toArray} from "boost-web-core";
-
-function kebabize(str: string) {
-    return str.split('').map((letter, idx) => {
-        return letter.toUpperCase() === letter
-            ? `${idx !== 0 ? '-' : ''}${letter.toLowerCase()}`
-            : letter;
-    }).join('');
-}
+import {OneOrMany, toArray, camelToKebabCase} from "boost-web-core";
 
 export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
     const rootElements = toArray(roots)
@@ -38,7 +30,7 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): string {
             for (const sk in val) {
                 const sv = val[sk]
                 if (sv != null)
-                    result += `${kebabize(sk)}: ${sv};`
+                    result += `${camelToKebabCase(sk)}: ${sv};`
             }
             result += '"'
         }

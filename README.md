@@ -285,10 +285,15 @@ const watch = renderToDom(
     vd(MyComponent, props1), targetElement
 )
 
-// Anytime you want to update:
+// Anytime you want to re-render the component:
 watch.update(
     vd(MyComponent, props2)
 )
+
+// To update only attributes:
+watch.newAttrs(newAttrs)
+//or
+watch.newAttrs(prev => ({...prev, someProp: newVal}))
 ```
 
 Rather than doing a complete replacement, it will patch the changes efficiently.
@@ -298,7 +303,7 @@ A complete example:
 ```javascript
 let c = 0
 function onIncrement(e) {
-    watch.update(vd(Counter, {count: c++}))
+    watch.newAttrs({count: c++})
 }
 
 const Counter = ({count = 0}) => vd('div', {}, [
@@ -306,7 +311,7 @@ const Counter = ({count = 0}) => vd('div', {}, [
     vd('button', {onclick: onIncrement}, '+')
 ])
 
-let watch = renderToDom(vd(Counter), document.getElementById('app')!)
+let watch = renderToDom(vd(Counter), document.getElementById('app'))
 ```
 
 ## React
@@ -322,7 +327,7 @@ const abstractComp = vd('div', {}, 'Hello, World!')
 const MyReactComp = toReactComponent(abstractComp, React)
 
 ReactDOM.render(<MyReactComp />,
-    document.getElementById('app')!)
+    document.getElementById('app'))
 ```
 
 Note that we had to pass `React` object as the second argument for `toReactComponent()` method.
@@ -340,7 +345,7 @@ const AbstractGreeter = ({name = ''}) =>
 const ReactGreeter = toReactComponent(AbstractGreeter, React)
 
 ReactDOM.render(<ReactGreeter name="React"/>, 
-    document.getElementById('app')!)
+    document.getElementById('app'))
 ```
 
 You can also include abstract components in React components
@@ -358,7 +363,7 @@ function ReactCounter({startWith = 0}) {
     </div>
 }
 
-ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app')!)
+ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app'))
 ```
 
 The opposite is also possible. That is, including React components in abstract components
