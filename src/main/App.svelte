@@ -1,5 +1,5 @@
 <script>
-    import SvelteComponent from '../SvelteComponent.svelte'
+    import SvelteWrapper from '../SvelteWrapper.svelte'
     import {vd} from "../AbstractDOM";
 
     let count = 0
@@ -8,15 +8,15 @@
 </script>
 
 <h1>Counter</h1>
-<SvelteComponent dom={CounterInfo} props={{c: count}} />
+<SvelteWrapper dom={CounterInfo} props={{c: count}} />
 <button on:click={e => count = count + 1}>+</button>
 
 <h1>Simple</h1>
-<SvelteComponent dom={vd('div', {}, [
+<SvelteWrapper dom={vd('div', {}, [
         'Visit us ',
         vd('a', {href: 'http://google.com'}, 'here'),
         '.'
     ])} />
 
 <h1>With Events</h1>
-<SvelteComponent dom={vd('button', {onclick: e => alert('Clicked!')}, 'Click Me')} />
+<SvelteWrapper dom={vd('button', {onclick: e => alert('Clicked!')}, 'Click Me')} />

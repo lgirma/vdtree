@@ -4,9 +4,11 @@ import {
     AbstractDomNode,
     evalLazyElement, vd
 } from "./AbstractDOM";
-import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
+import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, uuid} from "boost-web-core";
 // @ts-ignore
 import {DiffDOM} from "diff-dom";
+import {AbstractDomNodeWithState, AbstractReadableState, AbstractWritableState, StateSubscription} from "./State";
+import {type} from "os";
 const dd = new DiffDOM({valueDiffing: false});
 
 export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocument?: HTMLDocument): T[] {
@@ -33,10 +35,17 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
     let evalRoot = evalLazyElement(_root)
     let results: T[] = []
     for (const i of evalRoot) {
-        if (typeof i == 'string') {
-            results.push(i as any)
+        if (i == null)
+            continue
+        if (typeof i == 'string' || typeof i == 'number' || typeof i == 'boolean' || typeof i == 'bigint' || typeof i == 'symbol') {
+            results.push(`${i}` as any)
             continue
         }
+        /*else if (i.tag instanceof AbstractDomNodeWithState) {
+            let state = new DOMState(i.tag.initialState)
+            let stateMapping = i.tag.stateMapping
+            //i = toArray(stateMapping(state))[0]
+        }*/
         const result = (domDocument ?? document).createElement(i.tag) as HTMLElement
         for (const k in i.attrs) {
             const val = i.attrs[k]
@@ -47,7 +56,7 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
                         result.style[sk as any] = sv;
                 }
             }
-            else if (isFunc(val)) {
+            else if (isFunc(val) && k.indexOf('on') == 0) {
                 result.addEventListener(k.substr(2, k.length - 2), val)
             }
             else if (BOOL_ATTRS.indexOf(k) > -1) {
@@ -60,6 +69,15 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
             if (child != null) {
                 if (typeof child === 'string')
                     result.append(child)
+                else if (child.tag instanceof AbstractDomNodeWithState) {
+                    let state = new DOMState(child.tag.initialState)
+                    let stateMapping = child.tag.stateMapping
+                    let abstractElt = stateMapping(state)
+                    let instance = renderToDom(abstractElt, result)
+                    state.subscribe(() => {
+                        instance.update(stateMapping(state))
+                    })
+                }
                 else {
                     result.append(...toHtmlElement(child, domDocument))
                 }
@@ -87,7 +105,7 @@ export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomEl
             const patcher = (dest: any, src: any) => dd.apply(dest, dd.diff(dest, src))
             let success = patcher(target.firstChild!, newDomElement)
             if (!success) {
-                console.warn('Diff couldn\'t be efficiently applied');
+                console.warn('vdtree: Diff couldn\'t be efficiently applied');
                 target.innerHTML = ''
                 target.append(newDomElement)
             }
@@ -99,5 +117,56 @@ export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomEl
                 this.$$element.attrs = attrs
             this.update(this.$$element)
         }
+    }
+}
+
+export class DOMState<T> extends AbstractWritableState<T> {
+    $$val
+    $$subscriptions = {}
+
+    set(newVal: T) {
+        this.update(v => newVal)
+    }
+
+    update(reducer) {
+        this.$$val = reducer(this.$$val)
+        this.notifySubscribers(this.$$val)
+    }
+
+    notifySubscribers(newVal: T) {
+        for (const k in this.$$subscriptions) {
+            this.$$subscriptions[k](newVal)
+        }
+    }
+
+    get() {
+        return this.$$val
+    }
+
+    subscribe(subscriber) {
+        if (subscriber == null || !isFunc(subscriber))
+            return
+        let subscription = uuid()
+        this.$$subscriptions[subscription] = subscriber
+        return subscription
+    }
+
+    unsubscribe(subscription: StateSubscription) {
+        delete this.$$subscriptions[subscription]
+    }
+
+    bind<TP>(expr?: ((state: T) => TP)): AbstractReadableState<TP> {
+        return null as any
+    }
+
+    mutate(reducer: (prev: T) => void): void {
+        let newState = {...this.$$val}
+        reducer(newState)
+        this.update(p => newState)
+    }
+
+    constructor(initialValue: T) {
+        super();
+        this.$$val = initialValue
     }
 }

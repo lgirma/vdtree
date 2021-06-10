@@ -1,4 +1,4 @@
-import {AbstractDomNode} from "./AbstractDOM";
+import {AbstractDomElement, AbstractDomNode} from "./AbstractDOM";
 import {OneOrMany} from "boost-web-core";
 
 export type StateSubscription = string
@@ -16,13 +16,14 @@ export abstract class AbstractWritableState<T = any> extends AbstractReadableSta
     abstract mutate(reducer: (prev: T) => void): void
 }
 
-type StateMapping<TVal> = (forState: AbstractWritableState<TVal>) => OneOrMany<AbstractDomNode>
+type StateMapping<TVal> = (forState: AbstractWritableState<TVal>) => AbstractDomElement
 
-export class AbstractDomNodeWithState<TVal = any> {
+export class AbstractDomNodeWithState<TVal = any> extends Function {
     initialState: TVal
     stateMapping: StateMapping<TVal>
 
     constructor(_initialState: TVal, _stateMap: StateMapping<TVal>) {
+        super()
         this.initialState = _initialState
         this.stateMapping = _stateMap
     }

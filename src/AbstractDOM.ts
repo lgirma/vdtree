@@ -1,5 +1,7 @@
 import {isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
 
+export type PrimitiveType = string|bigint|number|symbol|boolean
+
 export type AbstractDomNode = AbstractDomElement|string
 
 export type DomElementChildren = AbstractDomNode[]
@@ -37,7 +39,7 @@ export type PrimitiveComponent = keyof HTMLElementTagNameMap
  */
 export function vd(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
                    attrs:{[key: string]: any} = {},
-                   children: DomElementChildrenFrom = null) : AbstractDomElement {
+                   ...children: DomElementChildrenFrom[]) : AbstractDomElement {
     const elt: AbstractDomElement = {tag, attrs: {}, children: []}
     attrs ??= {}
     for (const k in attrs) {
@@ -45,16 +47,12 @@ export function vd(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
             elt.attrs[k] = attrs[k]
     }
 
-    if (children != null) {
-        if (typeof children === 'string')
-            elt.children.push(children)
-        else if (Array.isArray(children)) {
-            children.forEach(c => {
-                if (c != null) elt.children.push(c)
-            })
-        } else {
-            elt.children.push(children as AbstractDomElement)
-        }
+    let flattenedChildren = [].concat.apply([], children as any)
+    flattenedChildren = flattenedChildren.filter(c => c != null)
+    if (flattenedChildren != null) {
+        flattenedChildren.forEach(c => {
+            if (c != null) elt.children.push(c)
+        })
     }
     return elt
 }
