@@ -36,7 +36,7 @@
     "vite": "^2.3.5"
   },
   "dependencies": {
-    "boost-web-core": "^1.9.0",
+    "boost-web-core": "^1.11.0",
     "diff-dom": "^4.2.2"
   },
   "author": "Leone",

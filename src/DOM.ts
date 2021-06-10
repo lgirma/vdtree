@@ -7,8 +7,13 @@ import {
 import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, uuid} from "boost-web-core";
 // @ts-ignore
 import {DiffDOM} from "diff-dom";
-import {AbstractDomNodeWithState, AbstractReadableState, AbstractWritableState, StateSubscription} from "./State";
-import {type} from "os";
+import {
+    AbstractDomNodeWithState,
+    AbstractReadableState,
+    AbstractWritableState,
+    StateSubscription,
+    ValueBinding
+} from "./AbstractState";
 const dd = new DiffDOM({valueDiffing: false});
 
 export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocument?: HTMLDocument): T[] {
@@ -57,7 +62,24 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
                 }
             }
             else if (isFunc(val) && k.indexOf('on') == 0) {
-                result.addEventListener(k.substr(2, k.length - 2), val)
+                result.addEventListener(k.substr(2, k.length - 2).toLowerCase(), val)
+            }
+            // binding expressions:
+            else if (val instanceof ValueBinding) {
+                let stateVal = val.get(val.state.get())
+                let bindingEL = e => val.set(val.state, e.target.type == 'checkbox' ? e.target.checked : e.target.value)
+                if (k == 'checked') {
+                    if (stateVal)
+                        result.setAttribute(k, k)
+                }
+                else if (k == 'value')
+                    result.setAttribute(k, stateVal)
+                else {
+                    result.setAttribute(k, stateVal)
+                    console.warn('vdiff: Binding to non-value attribute ' + k)
+                }
+                result.addEventListener('change', bindingEL as any)
+                result.addEventListener('input', bindingEL as any)
             }
             else if (BOOL_ATTRS.indexOf(k) > -1) {
                 if (val) result.setAttribute(k, k)
@@ -90,38 +112,41 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
 }
 
 interface DomElementInstance {
-    $$element: AbstractDomElement
+    $$virElement: AbstractDomElement
+    $$domElement: Node
     update(newElt: AbstractDomElement): void
     newAttrs(attrs: any): void
 }
 
 export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomElementInstance {
-    target.append(toDomElement(elt))
+    const domElt = toDomElement(elt, target.ownerDocument)
+    target.append(domElt)
     return {
-        $$element: elt,
+        $$virElement: elt,
+        $$domElement: domElt,
         update(newElt: AbstractDomElement) {
-            this.$$element = newElt
-            const newDomElement = toDomElement(this.$$element, target.ownerDocument)
+            this.$$virElement = newElt
+            const newDomElement = toDomElement(this.$$virElement, target.ownerDocument)
             const patcher = (dest: any, src: any) => dd.apply(dest, dd.diff(dest, src))
-            let success = patcher(target.firstChild!, newDomElement)
+            let success = patcher(this.$$domElement, newDomElement)
             if (!success) {
                 console.warn('vdtree: Diff couldn\'t be efficiently applied');
-                target.innerHTML = ''
-                target.append(newDomElement)
+                this.$$domElement.parentNode!.replaceChild(this.$$domElement, newDomElement)
+                this.$$domElement = newDomElement
             }
         },
         newAttrs(attrs: Dict<any>|((prev: Dict<any>) => Dict<any>)) {
             if (typeof attrs == 'function')
-                this.$$element.attrs = attrs(this.$$element.attrs)
+                this.$$virElement.attrs = attrs(this.$$virElement.attrs)
             else
-                this.$$element.attrs = attrs
-            this.update(this.$$element)
+                this.$$virElement.attrs = attrs
+            this.update(this.$$virElement)
         }
     }
 }
 
 export class DOMState<T> extends AbstractWritableState<T> {
-    $$val
+    $$val: T
     $$subscriptions = {}
 
     set(newVal: T) {
@@ -139,9 +164,7 @@ export class DOMState<T> extends AbstractWritableState<T> {
         }
     }
 
-    get() {
-        return this.$$val
-    }
+    get() { return this.$$val }
 
     subscribe(subscriber) {
         if (subscriber == null || !isFunc(subscriber))
@@ -155,8 +178,8 @@ export class DOMState<T> extends AbstractWritableState<T> {
         delete this.$$subscriptions[subscription]
     }
 
-    bind<TP>(expr?: ((state: T) => TP)): AbstractReadableState<TP> {
-        return null as any
+    bind(expr?, setter?) {
+        return new ValueBinding<T>(this, expr, setter)
     }
 
     mutate(reducer: (prev: T) => void): void {
