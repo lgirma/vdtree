@@ -1,5 +1,5 @@
 import { describe } from 'mocha';
-import {vd, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
+import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
 import {toHtmlString} from "../src/SSR";
 // @ts-ignore
 const chai = require('chai');
@@ -8,9 +8,9 @@ const expect = chai.expect;
 describe('SSR Tests', () => {
 
     it('Generates basic HTML', () => {
-        let abstractTree = vd('div', {}, [
+        let abstractTree = h('div', {}, [
             'child-1',
-            vd('child-2', {}),
+            h('child-2', {}),
             'child-3'
         ])
 
@@ -20,8 +20,8 @@ describe('SSR Tests', () => {
 
     it('Generates HTML for multi-top level elements', () => {
         let comps = [
-            vd('div', {divAttr: 'divAttrVal'}, 'child-1'),
-            vd('p', {pAttr: 'pAttrVal'}, 'child-2')
+            h('div', {divAttr: 'divAttrVal'}, 'child-1'),
+            h('p', {pAttr: 'pAttrVal'}, 'child-2')
         ]
         expect(toHtmlString(comps)).to.equal(
             '<div divAttr="divAttrVal">child-1</div><p pAttr="pAttrVal">child-2</p>'
@@ -29,8 +29,8 @@ describe('SSR Tests', () => {
     })
 
     it('Generates HTML string for attributes', () => {
-        let abstractTree = vd('div', {a: 'aVal', b: true, c: 1}, [
-            vd('child', {b: null, c: 'cVal', d: 1}, 'child-content')
+        let abstractTree = h('div', {a: 'aVal', b: true, c: 1}, [
+            h('child', {b: null, c: 'cVal', d: 1}, 'child-content')
         ])
 
         expect(toHtmlString(abstractTree)).to.equal(
@@ -38,15 +38,15 @@ describe('SSR Tests', () => {
     })
 
     it('Generates boolean HTML attributes properly', () => {
-        let abstractTree = vd('div', {a: 'aVal', disabled: true, hidden: false})
+        let abstractTree = h('div', {a: 'aVal', disabled: true, hidden: false})
 
         expect(toHtmlString(abstractTree)).to.equal(
             '<div a="aVal" disabled></div>')
     })
 
     it('Generates style HTML attribute properly', () => {
-        let divWithJSStyle = vd('div', {style: {color:'red', borderColor: 'red'}})
-        let divWithStringStyle = vd('div', {style: 'color:red;border-color:red;'})
+        let divWithJSStyle = h('div', {style: {color:'red', borderColor: 'red'}})
+        let divWithStringStyle = h('div', {style: 'color:red;border-color:red;'})
 
         expect(toHtmlString(divWithJSStyle)).to.equal(
             '<div style="color: red;border-color: red;"></div>')
@@ -56,21 +56,21 @@ describe('SSR Tests', () => {
     })
 
     it('Generates void elements properly', () => {
-        let abstractTree = vd('img', {src: '#'})
+        let abstractTree = h('img', {src: '#'})
 
         expect(toHtmlString(abstractTree)).to.equal(
             '<img src="#">')
     })
 
     it('Generates HTML string for lazy components', () => {
-        let lazyComponent = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
-        let comp = vd('div', {}, [
-            vd(lazyComponent, {name: 'vd-tree'}),
-            vd('a', {href: '#'}, 'Link')
+        let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
+        let comp = h('div', {}, [
+            h(lazyComponent, {name: 'vd-tree'}),
+            h('a', {href: '#'}, 'Link')
         ])
 
         expect(toHtmlString(comp)).to.equal(
-            '<div><div>Hello, vd-tree</div><a href="#">Link</a></div>'
+            '<div><div>Hello, h-tree</div><a href="#">Link</a></div>'
         )
     })
 

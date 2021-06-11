@@ -24,9 +24,9 @@ export type PrimitiveComponent = keyof HTMLElementTagNameMap
  * Example:
  *
  * ```ts
- * vd('p', {}, [
+ * h('p', {}, [
  *      "Here is a",
- *      vd("a", { href:"http://www.google.com/" }, "link"),
+ *      h("a", { href:"http://www.google.com/" }, "link"),
  *      "."
  * ]);
  * ```
@@ -37,9 +37,9 @@ export type PrimitiveComponent = keyof HTMLElementTagNameMap
  * <p>Here is a <a href="http://www.google.com/">link</a>.</p>
  * ```
  */
-export function vd(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
-                   attrs:{[key: string]: any} = {},
-                   ...children: DomElementChildrenFrom[]) : AbstractDomElement {
+export function h(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
+                  attrs:{[key: string]: any} = {},
+                  ...children: DomElementChildrenFrom[]) : AbstractDomElement {
     const elt: AbstractDomElement = {tag, attrs: {}, children: []}
     attrs ??= {}
     for (const k in attrs) {

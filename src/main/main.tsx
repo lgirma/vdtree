@@ -1,5 +1,5 @@
-/** @jsx vd */
-import {vd} from "../AbstractDOM";
+/** @jsx h */
+import {h} from "../AbstractDOM";
 import {renderToDom} from "../DOM";
 import {SamplesPage} from "./SampleComponents";
 

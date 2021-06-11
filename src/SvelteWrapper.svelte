@@ -1,6 +1,6 @@
 <script lang="ts">
     //import {AbstractDomElement} from "./AbstractDOM";
-    import {vd} from './AbstractDOM'
+    import {h} from './AbstractDOM'
     import {renderToDom} from './DOM'
     import { onMount } from 'svelte';
     import {isFunc} from "boost-web-core";
@@ -19,7 +19,7 @@
         if (mounted) {
             let _dom = dom
             if (isFunc(dom))
-                _dom = vd(dom)
+                _dom = h(dom)
             if (props != null)
                 _dom.attrs = props
             if (domInstance != null)

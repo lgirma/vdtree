@@ -1,5 +1,5 @@
 import '../style.css'
-import {vd} from "../AbstractDOM";
+import {h} from "../AbstractDOM";
 import {toReactComponent} from "../React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -8,9 +8,9 @@ import {SamplesPage} from "./SampleComponents";
 
 const Redness = ({val = 0}) => <span style={{color: `rgb(${val}, 0, 0)`}}>Redness</span>
 
-const AbstractCounterInfo = ({count = 0}) => vd('div', {}, [
+const AbstractCounterInfo = ({count = 0}) => h('div', {}, [
     `${count} - `,
-    vd(Redness, {val: count})
+    h(Redness, {val: count})
 ])
 
 const CounterInfo = toReactComponent(AbstractCounterInfo, React)
