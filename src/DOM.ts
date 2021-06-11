@@ -20,7 +20,7 @@ export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocum
     let result: T[] = []
     const roots = toArray(root)
     for (const item of roots) {
-        if (typeof item == 'string') {
+        if (typeof item == 'string' || typeof item == 'number' || typeof item == 'boolean' || typeof item == 'symbol' || typeof item == 'bigint') {
             result.push(item as any as T)
             continue
         }
@@ -36,14 +36,15 @@ export function toDomElement<T extends Node>(root: OneOrMany<AbstractDomNode>, d
     return [''] as any
 }
 
-function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: HTMLDocument): T[] {
+function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, domDocument?: HTMLDocument): T[] {
     let evalRoot = evalLazyElement(_root)
+    domDocument ??= document
     let results: T[] = []
     for (const i of evalRoot) {
         if (i == null)
             continue
-        if (typeof i == 'string' || typeof i == 'number' || typeof i == 'boolean' || typeof i == 'bigint' || typeof i == 'symbol') {
-            results.push(`${i}` as any)
+        if (typeof i == 'string' || typeof i == 'number' || typeof i == 'boolean' || typeof i == 'bigint') {
+            results.push(domDocument.createTextNode(`${i}`) as T)
             continue
         }
         /*else if (i.tag instanceof AbstractDomNodeWithState) {
@@ -51,7 +52,7 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
             let stateMapping = i.tag.stateMapping
             //i = toArray(stateMapping(state))[0]
         }*/
-        const result = (domDocument ?? document).createElement(i.tag) as HTMLElement
+        const result = domDocument.createElement(i.tag) as HTMLElement
         for (const k in i.attrs) {
             const val = i.attrs[k]
             if (k === 'style' && typeof(val) === 'object') {
@@ -89,8 +90,8 @@ function toHtmlElement<T extends Node>(_root: AbstractDomElement, domDocument?: 
         }
         for (const child of i.children) {
             if (child != null) {
-                if (typeof child === 'string')
-                    result.append(child)
+                if (typeof child == 'string' || typeof child == 'number' || typeof child == 'boolean' || typeof child == 'bigint')
+                    result.append(domDocument.createTextNode(`${child}`) as T)
                 else if (child.tag instanceof AbstractDomNodeWithState) {
                     let state = new DOMState(child.tag.initialState)
                     let stateMapping = child.tag.stateMapping

@@ -1,8 +1,8 @@
 import {isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
 
-export type PrimitiveType = string|bigint|number|symbol|boolean
+export type PrimitiveType = string|bigint|number|boolean
 
-export type AbstractDomNode = AbstractDomElement|string
+export type AbstractDomNode = AbstractDomElement|PrimitiveType
 
 export type DomElementChildren = AbstractDomNode[]
 

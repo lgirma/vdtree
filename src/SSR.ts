@@ -6,14 +6,14 @@ export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
     const rootElements = toArray(roots)
     let result = ''
     for (const root of rootElements) {
-        if (typeof root == "string") {
-            result += root
+        if (typeof root == "string" || typeof root === 'bigint' || typeof root === 'number' || typeof root == 'boolean') {
+            result += `${root}`
             continue
         }
         let rootEvaluated = evalLazyElement(root)
         rootEvaluated.forEach(re => {
-            if (typeof re == 'string')
-                result += re
+            if (typeof re == 'string' || typeof re === 'bigint' || typeof re === 'number' || typeof re == 'boolean')
+                result += `${re}`
             else
                 result += evaluatedDomElementToHtml(re)
         })

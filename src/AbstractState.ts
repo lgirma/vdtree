@@ -1,5 +1,5 @@
 import {AbstractDomElement, AbstractDomNode} from "./AbstractDOM";
-import {OneOrMany, parseBindingExpression} from "boost-web-core";
+import {Dict, OneOrMany, parseBindingExpression} from "boost-web-core";
 
 export type StateSubscription = string
 
@@ -30,6 +30,27 @@ export class ValueBinding<T> {
     }
 }
 
+export class DerivedReadonlyState<T, TBasedOn> extends AbstractReadableState<T> {
+    $$basedOn: AbstractReadableState<TBasedOn>
+    $$derivation: (state: AbstractReadableState<TBasedOn>) => T
+
+    get(): T { return this.$$derivation(this.$$basedOn) }
+
+    subscribe(subscriber: any): StateSubscription {
+        return this.$$basedOn.subscribe(() => subscriber(this.get()))
+    }
+
+    unsubscribe(s: StateSubscription) {
+        this.$$basedOn.unsubscribe(s)
+    }
+
+    constructor(basedOn: AbstractReadableState<TBasedOn>, derivation: (state: AbstractReadableState<TBasedOn>) => T) {
+        super();
+        this.$$basedOn = basedOn
+        this.$$derivation = derivation
+    }
+}
+
 export abstract class AbstractWritableState<T = any> extends AbstractReadableState<T> {
     abstract bind(expr?: (state: T) => any, setter?: (state: AbstractWritableState<T>, newValue: any) => void): ValueBinding<T>
     abstract set(newVal: T): void
@@ -52,4 +73,8 @@ export class AbstractDomNodeWithState<TVal = any> extends Function {
 
 export function withState<T>(initialValue: T, stateMapping: StateMapping<T>): AbstractDomNodeWithState<T> {
     return new AbstractDomNodeWithState(initialValue, stateMapping)
+}
+
+export function withDerivedState<T, TBasedOn>(derivation: (state: AbstractReadableState<TBasedOn>) => T, stateMapping: StateMapping<T>): AbstractDomNodeWithState<T> {
+    return new AbstractDomNodeWithState(null as any as T, stateMapping)
 }

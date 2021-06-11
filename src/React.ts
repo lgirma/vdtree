@@ -42,13 +42,13 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
     }
     if (root.children && root.children.length > 1)
         return createElement(root.tag, attrs,
-            ...root.children.map((c) => (typeof (c) === 'string' || c == null) ? c : toJsxElement(c, React)))
+            ...root.children.map((c) => (typeof c === 'string' || typeof c === 'bigint' || typeof c === 'number' || typeof c == 'boolean' || c == null) ? c : toJsxElement(c, React)))
     else if (root.children && root.children.length == 1) {
         let c = root.children[0]
         if (root.tag === 'textarea')
             return createElement(root.tag, {...attrs, defaultValue: c})
         else
-            return createElement(root.tag, attrs, (typeof(c) === 'string' || c == null) ? c : toJsxElement(c, React))
+            return createElement(root.tag, attrs, (typeof c === 'string' || typeof c === 'bigint' || typeof c === 'number' || typeof c == 'boolean' || c == null) ? c : toJsxElement(c, React))
     }
     else
         return createElement(root.tag, attrs)
