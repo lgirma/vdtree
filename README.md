@@ -49,6 +49,15 @@ import {vd} from 'vdtree'
 let myDomTree = vd('div', {}, 'Hello, World!')
 ```
 
+or the JSX version:
+
+```jsx
+/** @jsx vd */
+import {vd} from 'vdtree'
+
+let myDomTree = <div>Hello, World!</div>
+```
+
 Then to render it on the browser DOM:
 
 **Vanilla Javascript**:
@@ -90,6 +99,17 @@ An abstract greeter component is a pure function that accepts name as a prop and
 const AbstractGreeter = 
         props => vd('div', {}, `Hello, ${props.name}`)
 ```
+
+or in JSX:
+
+```jsx
+/** @jsx vd */
+import {vd} from 'vdtree'
+
+const AbstractGreeter =
+        props => <div>Hello, {props.name}</div>
+```
+
 Then to render it on the browser DOM:
 
 **Vanilla Javascript**:
@@ -161,49 +181,18 @@ which is an equivalent of:
 </div>
 ```
 
-To create an `<img>`:
-
-```javascript
-vd('img', {class: 'active', src: './image.jpg'})
-```
-
-which is an equivalent of:
-
-```html
-<img class="active" src="./image.jpg">
-```
-
-To more complicated virtual dom tree:
-
-```javascript
-vd('p', {class: 'card'}, [
-    vd('i', {class: 'fas fa-eye'}),
-    'Looking in',
-    vd('a', {href: 'http://link.com/eyes', style: {color: 'red'}}, 'here')
-])
-```
-
-which is an equivalent of:
-
-```html
-<p class="card">
-    <i class="fas fa-eye" />
-    Looking in <a href="http://link.com/eyes" style="color:red">here</a>
-</p>
-```
-
 ## Styles
 
 You can pass `style` as a string or as a javascript object
 
-```javascript
-vd('p', {style: 'color: red; border-color: green'})
+```jsx
+<p style="color: red; border-color: green"></p>
 ```
 
 would be the same as
 
 ```javascript
-vd('p', {style: {color: 'red', borderColor: 'green'}})
+<p style={{color: 'red', borderColor: 'green'}}></p>
 ```
 
 **Note:** Both will work in React using the `toReactComponent` method. [See 'React' Below](#react)
@@ -212,16 +201,14 @@ vd('p', {style: {color: 'red', borderColor: 'green'}})
 
 You can use event handlers, as you would, using the JS DOM APIs
 
-```javascript
-vd('div', {
-    onclick: e => alert('Clicked!')
-})
+```jsx
+<div onclick={e => alert('Clicked!')}></div>
 
-vd('form', { onsubmit: e => e.preventDefault() }, [
-    vd('input', {placeholder: 'User name', id: 'userName'}),
-    vd('input', {placeholder: 'Password', id: 'password', required: true}),
-    vd('input', {type: 'submit', value: 'Login'})
-])
+<form onsubmit={e => e.preventDefault()}>
+  <input placeholder="User name" id="userName" />
+  <input type="password" required={true} id="userName" />
+  <input type="submit" value="Login" />
+</form>
 ```
 
 All valid DOM events can be used. [See](https://developer.mozilla.org/en-US/docs/Web/Events).
@@ -232,36 +219,37 @@ Lazy evaluated custom components can be used in the abstract DOM.
 
 A simple custom component:
 
-```javascript
-const Greeter = ({name = ''}) => vd('div', {}, `Hello, ${name}`)
+```jsx
+const Greeter = ({name = ''}) => <div>Hello, {name}</div>
 ```
 
 or as a full-blown function:
 
-```javascript
+```jsx
 function Greeter({name = ''}) {
-    return vd('div', {}, `Hello, ${name}`)
+    return <div>Hello, {name}</div>
 }
 ```
 
 Custom components can also be included in the virtual DOM tree as:
 
-```javascript
-vd('div', {}, [
-    'Greetings output',
-    vd(Greeter, {name: 'John'}),
-    vd('hr')
-])
+```jsx
+<div>
+  Greetings output
+  <Greeter name="John" />
+  <hr />
+</div>
 ```
 
 ## Rendering to the browser DOM
 
 To render static abstract DOM into an actual DOM in the browser,
 
-```javascript
+```jsx
+/** @jsx vd */
 import {toDomElement, vd} from 'vdtree'
 
-const abstractElt = vd('div', {}, 'Hello, World!')
+const abstractElt = <div>Hello, World!</div>
 document.body.append(toDomElement(abstractElt))
 ```
 
@@ -271,8 +259,8 @@ If you want to render multiple root-level elements, use `toDom`
 import {toDom, vd} from 'vdtree'
 
 const abstractElts = [
-    vd('div', {}, 'Element 1'),
-    vd('div', {}, 'Element 2')
+    <div>Element 1</div>,
+    <div>Element 3</div>
 ]
 document.body.append(...toDom(abstractElts))
 ```
@@ -282,12 +270,12 @@ To enable watch and update on the DOM when values change, use `renderToDom()` me
 ```javascript
 // First time render
 const watch = renderToDom(
-    vd(MyComponent, props1), targetElement
+    <Comp prop={propVal} />, targetElement
 )
 
 // Anytime you want to re-render the component:
 watch.update(
-    vd(MyComponent, props2)
+    <Comp prop={newVal} />
 )
 
 // To update only attributes:
@@ -297,22 +285,6 @@ watch.newAttrs(prev => ({...prev, someProp: newVal}))
 ```
 
 Rather than doing a complete replacement, it will patch the changes efficiently.
-
-A complete example:
-
-```javascript
-let c = 0
-function onIncrement(e) {
-    watch.newAttrs({count: c++})
-}
-
-const Counter = ({count = 0}) => vd('div', {}, [
-    vd('div', {}, `${count}`),
-    vd('button', {onclick: onIncrement}, '+')
-])
-
-let watch = renderToDom(vd(Counter), document.getElementById('app'))
-```
 
 ## React
 
@@ -380,11 +352,11 @@ vd('div', {}, [
 
 To get an HTML string from an abstract dom tree,
 
-```javascript
+```jsx
 import {toHtmlString} from "vdtree"
 
 const htmlString = toHtmlString(
-    vd('div', {}, 'Hello, World')
+    <div>Hello, World!</div>
 )
 ```
 
@@ -438,3 +410,47 @@ You can also use event handling as
 ```
 
 **Note**: The `SvelteComponent` will always create a top-level `<div>` tag.
+
+## State
+
+Use `withState()` method to create an abstract component with internal state.
+
+```jsx
+withState(initialStateValue, state => componentTree)
+```
+
+An abstract counter component could look like:
+
+```jsx
+export const AbstractCounter = withState(0, count =>
+    <div>
+        <div>{count.get()}</div>
+        <button onclick={e => count.update(c => c+1)}>+</button>
+    </div>
+)
+```
+
+Upon rendering the above component
+
+* When targeting Vanilla JS, a built-in state handling will be generated.
+* When targeting react, the state will be changed to hooks
+* When targeting svelte, a run-time state handling will be generated.
+* State is not supported by SSR
+
+Two-way data binding is also supported
+
+```jsx
+export const AbstractGreeter = withState('', name =>
+    <div>
+        <input value={name.bind()} placeholder="Name" />
+        <div>Hello, {name.get()}</div>
+    </div>
+)
+
+// binding with custom property expression
+export const AbstractTerms = withState({agree: false}, state =>
+    <label>
+        <input type="checkbox" checked={state.bind(s => s.agree)} /> I agree to terms
+    </label>
+)
+```
