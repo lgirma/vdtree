@@ -4,6 +4,7 @@ import {toReactComponent} from "../React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {useState} from "react";
+import {SamplesPage} from "./SampleComponents";
 
 const Redness = ({val = 0}) => <span style={{color: `rgb(${val}, 0, 0)`}}>Redness</span>
 
@@ -23,5 +24,7 @@ function ReactCounter({startWith = 0}) {
     </div>
 }
 
-ReactDOM.render(<ReactCounter startWith={3} />, document.getElementById('app')!)
+let DemoPage = toReactComponent(SamplesPage, React)
+
+ReactDOM.render(<DemoPage />, document.getElementById('app')!)
 

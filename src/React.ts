@@ -1,5 +1,6 @@
 import {AbstractDomElement} from "./AbstractDOM";
-import {isFunc, OneOrMany, toArray, kebabToCamelCase} from "boost-web-core";
+import {isFunc, OneOrMany, toArray, kebabToCamelCase, uuid} from "boost-web-core";
+import {AbstractDomNodeWithState, AbstractWritableState, StateSubscription, ValueBinding} from "./AbstractState";
 
 const styleToObject = (style: string): any => style.split(';').filter(s => s.length)
     .reduce((a, b) => {
@@ -16,7 +17,10 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
     }
     root = roots[0]
     if (isFunc(root)) {
-        return toReactComponent(root as any, React, key) as any as T
+        return toReactComponent(root as any, React, key) as any
+    }
+    else if (root.tag instanceof AbstractDomNodeWithState) {
+        return toReactComponent(root as any, React, key) as any
     }
     let attrs: any = {}
     if (key != null) attrs.key = key;
@@ -50,8 +54,59 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
         return createElement(root.tag, attrs)
 }
 
-export function toReactComponent<TProps, T extends JSX.Element>(vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
-    if (isFunc(vdComponent))
+export function toReactComponent<TProps, T extends JSX.Element>(
+    vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
+    if ((vdComponent as AbstractDomElement).tag instanceof AbstractDomNodeWithState) {
+        return function () {
+            const hook = React.useState(vdComponent.tag.initialState)
+            const stateWrapper = new ReactHooksState(hook)
+            let virDomTree = vdComponent.tag.stateMapping(stateWrapper)
+            return toJsxElement(virDomTree, React, key)
+        }
+    }
+    else if (typeof(vdComponent) == 'function')
         return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
     return () => toJsxElement(vdComponent as any, React, key)
+}
+
+export class ReactHooksState<T> extends AbstractWritableState<T> {
+    $$hook: [T, Function]
+    $$subscriptions = {}
+
+    bind(expr: ((state: T) => any) | undefined, setter: ((state: AbstractWritableState<T>, newValue: any) => void) | undefined): ValueBinding<T> {
+        return new ValueBinding<T>(this, expr, setter)
+    }
+
+    get(): T { return this.$$hook[0] }
+
+    mutate(reducer: (prev: T) => void): void {
+        let newState = {...this.$$hook[0]}
+        reducer(newState)
+        this.update(p => newState)
+    }
+
+    set(newVal: T): void {
+        this.update(v => newVal)
+    }
+
+    subscribe(subscriber: any) {
+        if (subscriber == null || !isFunc(subscriber))
+            return
+        let subscription = uuid()
+        this.$$subscriptions[subscription] = subscriber
+        return subscription
+    }
+
+    unsubscribe(s: StateSubscription) {
+    }
+
+    update(reducer: (prev: T) => T): void {
+        this.$$hook[1](reducer)
+    }
+
+    constructor(hooksState) {
+        super();
+        this.$$hook = hooksState
+    }
+
 }

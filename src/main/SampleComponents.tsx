@@ -1,8 +1,9 @@
 /** @jsx vd */
 import {vd} from '../AbstractDOM'
 import {withState} from "../AbstractState";
+import * as React from "../React";
 
-export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => `Hello, ${subject}`
+export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => <span>{`Hello, ${subject}`}</span>
 
 export const AbstractRating = withState(0, rating =>
     <div>
@@ -24,6 +25,17 @@ export const AbstractCounter = withState(0,count =>
     </div>
 )
 
+export const AbstractAgreement = withState({agree: false}, state =>
+    <div>
+        <label>
+            <input type="checkbox" checked={state.bind(s => s.agree)} /> I agree to terms
+        </label>
+        <div style={{color: (state.get().agree ? 'green' : 'red')}}>
+            {state.get().agree ? 'All OK' : 'Please agree first'}
+        </div>
+    </div>
+)
+
 export const AbstractGreeter = withState('', name =>
     <div>
         <input value={name.bind()} placeholder="Name" />
@@ -37,18 +49,27 @@ interface TodoItem {
 }
 
 const initialTodoState = {
-    items: [] as TodoItem[], showComplete: false, filter: '', newTask: ''
+    items: [{isDone: true, task: 'Sample task'}] as TodoItem[], showComplete: false, filter: '', newTask: ''
 }
 
 export const AbstractTodo = withState(initialTodoState, state =>
     <div>
         <div style={{display: 'table', marginBottom: '10px', padding: '3px', borderBottom: '1px solid grey'}}>
-            <input value={state.bind(s => s.filter)} placeholder="Filter" />
+            <input value={state.bind(s => s.filter)} placeholder="Filter" type="search" />
             <label><input type="checkbox" checked={state.bind(s => s.showComplete)} /> Show Completed</label>
         </div>
         {
-            state.get().items.filter(t => state.get().showComplete || !t.isDone).map((t, i) => <div>
-                <label><input type="checkbox" checked={state.bind(s => s.items[i].isDone, (s, v) => s.mutate(prev => prev.items[i].isDone = v))} /> {t.task}</label>
+            state.get().items
+                .filter(t => state.get().showComplete || !t.isDone)
+                .filter(t => state.get().filter.length == 0 || t.task.toLowerCase().indexOf(state.get().filter.toLowerCase()) > -1)
+                .map(t => <div>
+                <label>
+                    <input type="checkbox"
+                          checked={state.bind(
+                              s => s.items.find(j => j == t)!.isDone,
+                              (s, v) => s.mutate(prev => prev.items.find(j => j == t)!.isDone = v))} />
+                              {t.task}
+                </label>
             </div>)
         }
         {state.get().items.length == 0 ? <div>No Tasks</div> : ''}
@@ -61,3 +82,26 @@ export const AbstractTodo = withState(initialTodoState, state =>
         </div>
     </div>
 )
+
+export const SamplesPage = () => <div>
+    <h3>Static Component</h3>
+    <div>Static Text</div>
+
+    <h3>Func Component</h3>
+    <AbstractHelloWorld subject="Vanilla JS" />
+
+    <h3>Counter</h3>
+    <AbstractCounter />
+
+    <h3>Greeter</h3>
+    <AbstractGreeter />
+
+    <h3>Agreement</h3>
+    <AbstractAgreement />
+
+    <h3>Rating</h3>
+    <AbstractRating />
+
+    <h3>Todo</h3>
+    <AbstractTodo />
+</div>
