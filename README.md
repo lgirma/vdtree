@@ -20,6 +20,7 @@ Compile abstract web components to DOM, react, svelte and more
 - [React](#react)
 - [SSR](#to-server-side-rendered-ssr-html)
 - [Svelte](#svelte)
+- [State](#state)
 
 ## Installation
 
@@ -419,6 +420,8 @@ Use `withState()` method to create an abstract component with internal state.
 withState(initialStateValue, state => componentTree)
 ```
 
+Use `state.get()` method to read values and `state.update()` or `state.set()` method to write values. 
+
 An abstract counter component could look like:
 
 ```jsx
@@ -430,14 +433,20 @@ export const AbstractCounter = withState(0, count =>
 )
 ```
 
+And a reset button in the above counter could look like:
+
+```jsx
+<button onclick={e => count.set(0)}>Reset</button>
+```
+
 Upon rendering the above component
 
 * When targeting Vanilla JS, a built-in state handling will be generated.
-* When targeting react, the state will be changed to hooks
+* When targeting react, the state will be changed to hooks (`const [count, setCount] = useState(0)`)
 * When targeting svelte, a run-time state handling will be generated.
 * State is not supported by SSR
 
-Two-way data binding is also supported
+Two-way data binding is also supported. Use `myState.bind()` to 
 
 ```jsx
 export const AbstractGreeter = withState('', name =>
@@ -448,9 +457,31 @@ export const AbstractGreeter = withState('', name =>
 )
 
 // binding with custom property expression
-export const AbstractTerms = withState({agree: false}, state =>
+export const AbstractContact = withState({name: '', email: '', isCompany: false}, state => <div>
+    <input value={state.bind(s => s.name)} />
+    <input value={state.bind(s => s.email)} type="email" />
     <label>
-        <input type="checkbox" checked={state.bind(s => s.agree)} /> I agree to terms
+        <input type="checkbox" checked={state.bind(s => s.isCompany)} /> Is Company
     </label>
+</div>
 )
+```
+
+State mutations are also supported through `mutate()` method:
+
+```javascript
+state.mutate(prev => prev.items[1].name = '')
+state.mutate(prev => prev.items.push({name: ''}))
+```
+
+You can also provide custom two-way binding by providing a getter and setter for the input as 
+`state.bind(gettter, setter)`
+
+```jsx
+// Assuming initial state is { items: [] }
+
+<input value={state.bind(
+    s => s.items.find(i => i.id == 1).name,
+    (s, val) => s.mutate(prevState => prevState.items.find(i => i.id == 1).name = val)
+)} />
 ```

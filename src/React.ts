@@ -56,7 +56,9 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
 
 export function toReactComponent<TProps, T extends JSX.Element>(
     vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
-    if ((vdComponent as AbstractDomElement).tag instanceof AbstractDomNodeWithState) {
+    if (typeof(vdComponent) == 'function' && !((vdComponent as any).tag instanceof  AbstractDomNodeWithState))
+        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
+    else if (typeof vdComponent == 'object' && vdComponent.tag instanceof AbstractDomNodeWithState) {
         return function () {
             const hook = React.useState(vdComponent.tag.initialState)
             const stateWrapper = new ReactHooksState(hook)
@@ -64,8 +66,6 @@ export function toReactComponent<TProps, T extends JSX.Element>(
             return toJsxElement(virDomTree, React, key)
         }
     }
-    else if (typeof(vdComponent) == 'function')
-        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
     return () => toJsxElement(vdComponent as any, React, key)
 }
 
