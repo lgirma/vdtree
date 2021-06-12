@@ -1,4 +1,5 @@
 import {isFunc, Nullable, OneOrMany, toArray} from "boost-web-core";
+import {AbstractDomNodeWithState} from "./AbstractState";
 
 export type PrimitiveType = string|bigint|number|boolean
 
@@ -58,7 +59,7 @@ export function h(tag: PrimitiveComponent|AbstractDomComponent|CustomComponent,
 }
 
 export function evalLazyElement(comp: AbstractDomElement): AbstractDomNode[] {
-    if (isFunc(comp.tag)) {
+    if (isFunc(comp.tag) && comp.tag.constructor !== AbstractDomNodeWithState) {
         return toArray((comp.tag as AbstractDomComponent)(comp.attrs, comp.children))
     }
     return [comp]

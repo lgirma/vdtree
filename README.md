@@ -3,7 +3,6 @@
 Compile abstract web components to DOM, react, svelte and more
 
 * Write your web components once; use them in vanilla JS, React, Svelte, SSR, etc.
-* Small (~ 1 kb without state, ~ 6 kb for svelte)
 * Written in Typescript
 
 ## Table of Contents
@@ -12,15 +11,17 @@ Compile abstract web components to DOM, react, svelte and more
 - [Tutorials](#quick-start-tutorials)
     - [Hello World](#hello-world)
     - [Greeter](#greeter)
+    - [Counter](#counter)
 - [Getting Started](#getting-started)
-- [Styles](#styles)
-- [Event Handlers](#event-handlers)
-- [Custom Components](#custom-components)
-- [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
-- [React](#react)
-- [SSR](#to-server-side-rendered-ssr-html)
-- [Svelte](#svelte)
-- [State](#state)
+  - [Styles](#styles)
+  - [Event Handlers](#event-handlers)
+  - [Custom Components](#custom-components)
+  - [State](#state)
+- Compile to Various Frameworks
+  - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
+  - [React](#react)
+  - [SSR](#to-server-side-rendered-ssr-html)
+  - [Svelte](#svelte)
 
 ## Installation
 
@@ -56,32 +57,32 @@ or the JSX version:
 /** @jsx h */
 import {h} from 'vdtree'
 
-let myDomTree = <div>Hello, World!</div>
+let HelloWorld = <div>Hello, World!</div>
 ```
 
-Then to render it on the browser DOM:
+Then to targetting various frameworks:
 
 **Vanilla Javascript**:
 ```javascript
-import {toDomElement} from 'vdtree'
-document.body.append(toDomElement(myDomTree))
+import {renderToDom} from 'vdtree'
+renderToDom(HelloWorld, document.body)
 ```
 
 **React**:
 ```jsx
 import {toReactComponent} from 'vdtree'
 
-const MyReactComp = toReactComponent(myDomTree, React)
-ReactDOM.render(<MyReactComp />, document.getElementById('app'))
+const ReactHelloWorld = toReactComponent(HelloWorld, React)
+ReactDOM.render(<ReactHelloWorld />, document.body)
 ```
 
 **Svelte**:
 ```jsx
 <script>
-  import {SvelteComponent} from 'vdtree'
+  import {SvelteWrapper} from 'vdtree'
 </script>
 
-<SvelteComponent dom={myDomTree} />
+<SvelteWrapper dom={HelloWorld} />
 ```
 
 **SSR**:
@@ -111,43 +112,56 @@ const AbstractGreeter =
         props => <div>Hello, {props.name}</div>
 ```
 
-Then to render it on the browser DOM:
-
-**Vanilla Javascript**:
+Then using it in various targets:
 
 ```javascript
-import {toDomElement} from 'vdtree'
+// Vanilla JS:
+renderToDom(<AbstractGreeter name="Vanilla-JS" />, document.body)
 
-document.body.append(toDomElement(
-        h(AbstractGreeter, {name: 'Vanilla JS'})
-))
+//React
+const ReactGreeter = toReactComponent(AbstractGreeter, React)
+ReactDOM.render(<ReactGreeter name="React" />, document.body)
+
+// Svelte:
+<SvelteWrapper dom={AbstractGreeter} props={{name: 'Svelte'}} />
+
+// SSR:
+toHtmlString(
+    h(AbstractGreeter, {name: 'SSR'})
+)
 ```
 
-**React**:
+### Counter
+
+An abstract counter component using `withState(initialState, state => components)` method:
+
 ```jsx
-import {toReactComponent} from 'vdtree'
+/** @jsx h */
+import {h, withState} from 'vdtree'
 
-const GreeterReact = toReactComponent(AbstractGreeter, React)
-ReactDOM.render(<GreeterReact name="React" />, document.getElementById('app')!)
+const Counter = withState(0, count => 
+    <div>
+      <div>{count.get()}</div>
+      <button onclick={e => count.update(c => c + 1)}>+</button>
+    </div>)
 ```
 
-**Svelte**:
+Then targeting various frameworks,
+
 ```jsx
-<script>
-  import {SvelteComponent} from 'vdtree'
-</script>
+// Vanilla JS:
+renderToDom(Counter, document.body)
 
-<SvelteComponent dom={AbstractGreeter} props={{name: 'Svelte'}} />
-```
+// React:
+const ReactCounter = toReactComponent(Counter, React)
+ReactDOM.render(<ReactCounter />, document.body)
 
-**SSR**:
+// Svelte:
+<SvelteWrapper dom={Counter} />
 
-```javascript
-import {toHtmlString} from 'vdtree'
+// SSR:
+toHtmlString(Counter)
 
-console.log(toHtmlString(
-        h(AbstractGreeter, {name: 'SSR'})
-))
 ```
 
 ## Getting Started
@@ -216,6 +230,14 @@ You can use event handlers, as you would, using the JS DOM APIs
 
 All valid DOM events can be used. [See](https://developer.mozilla.org/en-US/docs/Web/Events).
 
+You can mix vanilla events style and react style event handler names:
+
+```jsx
+// Both are valid
+<button onclick={...} />
+<button onClick={...} />
+```
+
 ## Custom Components
 
 Lazy evaluated custom components can be used in the abstract DOM.
@@ -223,7 +245,8 @@ Lazy evaluated custom components can be used in the abstract DOM.
 A simple custom component:
 
 ```jsx
-const Greeter = ({name = ''}) => <div>Hello, {name}</div>
+const Greeter = 
+        ({name = ''}) => <div>Hello, {name}</div>
 ```
 
 or as a full-blown function:
@@ -242,6 +265,89 @@ Custom components can also be included in the virtual DOM tree as:
   <Greeter name="John" />
   <hr />
 </div>
+```
+
+## State
+
+Use `withState()` method to create an abstract component with internal state.
+
+```jsx
+withState(initialStateValue, state => componentTree)
+```
+
+Use
+
+* `state.get()` method to read values
+* `state.update(s => newState)` to update state
+* `state.set(newState)` method to write values.
+* `state.mutate(s => mutation)` to mutate big state trees.
+* `state.bind()` to utilize two-way binding in input elements.
+
+An abstract counter component could look like:
+
+```jsx
+export const AbstractCounter = withState(0, count =>
+    <div>
+        <div>{count.get()}</div>
+        <button onclick={e => count.update(c => c + 1)}>+</button>
+    </div>
+)
+```
+
+And a reset button in the above counter could look like:
+
+```jsx
+<button onclick={e => count.set(0)}>Reset</button>
+```
+
+Upon rendering the above component
+
+* When targeting Vanilla JS, a built-in state handling will be generated.
+* When targeting react, the state will be changed to hooks (`const [count, setCount] = useState(0)`)
+* When targeting svelte, a run-time state handling will be generated.
+* State is not supported by SSR
+
+Two-way data binding is also supported. Use `myState.bind()` as
+
+```jsx
+export const AbstractGreeter = withState('', name =>
+    <div>
+        <input value={name.bind()} placeholder="Name" />
+        <div>Hello, {name.get()}</div>
+    </div>
+)
+
+// binding with custom property expression
+const initialState = {name: '', email: '', isCompany: false}
+export const AbstractContact = withState(initialState, state => 
+  <div>
+    <input value={state.bind(s => s.name)} />
+    <input value={state.bind(s => s.email)} type="email" />
+    <label>
+        <input type="checkbox" checked={state.bind(s => s.isCompany)} /> Is Company
+    </label>
+  </div>
+)
+```
+
+You can also provide custom two-way binding by providing a getter and setter for the input as
+`state.bind(gettter, setter)`
+
+```jsx
+// Assuming initial state is { items: [] }
+
+<input value={state.bind(
+    s => s.items.find(i => i.id == 1).name,
+    (s, val) => s.mutate(prevState => prevState.items.find(i => i.id == 1).name = val)
+)} />
+```
+
+State mutations are also supported through `mutate()` method.
+This can be useful when the state tree is big and mutation would rather be easier.
+
+```javascript
+state.mutate(prev => prev.items[1].name = '')
+state.mutate(prev => prev.items.push({name: ''}))
 ```
 
 ## Rendering to the browser DOM
@@ -284,7 +390,7 @@ watch.update(
 // To update only attributes:
 watch.newAttrs(newAttrs)
 //or
-watch.newAttrs(prev => ({...prev, someProp: newVal}))
+watch.newAttrs(prevAttrs => ({...prevAttrs, someProp: newVal}))
 ```
 
 Rather than doing a complete replacement, it will patch the changes efficiently.
@@ -298,11 +404,10 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {toReactComponent} from "vdtree"
 
-const abstractComp = h('div', {}, 'Hello, World!')
-const MyReactComp = toReactComponent(abstractComp, React)
+const AbstractHelloWorld = h('div', {}, 'Hello, World!')
+const ReactHelloWorld = toReactComponent(AbstractHelloWorld, React)
 
-ReactDOM.render(<MyReactComp/>,
-        document.getElementById('app'))
+ReactDOM.render(<ReactHelloWorld/>, document.body)
 ```
 
 Note that we had to pass `React` object as the second argument for `toReactComponent()` method.
@@ -356,7 +461,7 @@ h('div', {}, [
 To get an HTML string from an abstract dom tree,
 
 ```jsx
-import {toHtmlString} from "vdtree"
+import {toHtmlString, h} from "vdtree"
 
 const htmlString = toHtmlString(
     <div>Hello, World!</div>
@@ -381,109 +486,42 @@ which will output:
 
 ## Svelte
 
-You can use the abstract DOM in a svelte component using `SvelteComponent` import
+You can use the abstract DOM in a svelte component using `SvelteWrapper` import
 
 ```jsx
 <script>
-  import {h, SvelteComponent} from 'vdtree'
+  import {h, SvelteWrapper} from 'vdtree'
 
   let myDom = h('div', {}, 'Content')
 </script>
 
-<SvelteComponent dom={myDom}/>
+<SvelteWrapper dom={myDom}/>
 ```
 
 You can also use an abstract component inside the svelte component.
 A simple counter example:
 
 ```jsx
+// CounterInfo.tsx
+const AbstractCounterInfo = ({c = 1}) => <div>{c}</div>
+        
+// Counter.svelte
 <script>
     let count = 0
-    const AbstractCounterInfo = ({c = 1}) => h('div', {}, `${c}`)
 </script>
 
-<SvelteComponent dom={AbstractCounterInfo} props={{c: count}} />
+<SvelteWrapper dom={AbstractCounterInfo} props={{c: count}} />
 <button on:click={e => count = count+1}>+</button>
 ```
 
 You can also use event handling as
 
 ```jsx
-<SvelteComponent dom={h('button', {onclick: e => alert('Clicked!')}, 'Click Me')}/>
+// MyComp.tsx
+const MyComp = <button onclick={e => alert('Clicked!')}>Click Me</button>
+
+// SvelteFile.svelte
+<SvelteWrapper dom={MyComp}/>
 ```
 
-**Note**: The `SvelteComponent` will always create a top-level `<div>` tag.
-
-## State
-
-Use `withState()` method to create an abstract component with internal state.
-
-```jsx
-withState(initialStateValue, state => componentTree)
-```
-
-Use `state.get()` method to read values and `state.update()` or `state.set()` method to write values. 
-
-An abstract counter component could look like:
-
-```jsx
-export const AbstractCounter = withState(0, count =>
-    <div>
-        <div>{count.get()}</div>
-        <button onclick={e => count.update(c => c+1)}>+</button>
-    </div>
-)
-```
-
-And a reset button in the above counter could look like:
-
-```jsx
-<button onclick={e => count.set(0)}>Reset</button>
-```
-
-Upon rendering the above component
-
-* When targeting Vanilla JS, a built-in state handling will be generated.
-* When targeting react, the state will be changed to hooks (`const [count, setCount] = useState(0)`)
-* When targeting svelte, a run-time state handling will be generated.
-* State is not supported by SSR
-
-Two-way data binding is also supported. Use `myState.bind()` to 
-
-```jsx
-export const AbstractGreeter = withState('', name =>
-    <div>
-        <input value={name.bind()} placeholder="Name" />
-        <div>Hello, {name.get()}</div>
-    </div>
-)
-
-// binding with custom property expression
-export const AbstractContact = withState({name: '', email: '', isCompany: false}, state => <div>
-    <input value={state.bind(s => s.name)} />
-    <input value={state.bind(s => s.email)} type="email" />
-    <label>
-        <input type="checkbox" checked={state.bind(s => s.isCompany)} /> Is Company
-    </label>
-</div>
-)
-```
-
-State mutations are also supported through `mutate()` method:
-
-```javascript
-state.mutate(prev => prev.items[1].name = '')
-state.mutate(prev => prev.items.push({name: ''}))
-```
-
-You can also provide custom two-way binding by providing a getter and setter for the input as 
-`state.bind(gettter, setter)`
-
-```jsx
-// Assuming initial state is { items: [] }
-
-<input value={state.bind(
-    s => s.items.find(i => i.id == 1).name,
-    (s, val) => s.mutate(prevState => prevState.items.find(i => i.id == 1).name = val)
-)} />
-```
+**Note**: The `SvelteWrapper` will always create a top-level `<div>` tag.

@@ -16,7 +16,7 @@ import {
 } from "./AbstractState";
 const dd = new DiffDOM({valueDiffing: false});
 
-export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocument?: HTMLDocument): T[] {
+export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, target?: HTMLElement): T[] {
     let result: T[] = []
     const roots = toArray(root)
     for (const item of roots) {
@@ -24,21 +24,21 @@ export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocum
             result.push(item as any as T)
             continue
         }
-        result.push(...toHtmlElement(item, domDocument) as T[])
+        result.push(...toHtmlElement(item, target) as T[])
     }
     return result
 }
 
-export function toDomElement<T extends Node>(root: OneOrMany<AbstractDomNode>, domDocument?: HTMLDocument): T {
-    let items = toDom<T>(root, domDocument)
+export function toDomElement<T extends Node>(root: OneOrMany<AbstractDomNode>, target?: HTMLElement): T {
+    let items = toDom<T>(root, target)
     if (items.length > 0)
         return items[0]
     return [''] as any
 }
 
-function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, domDocument?: HTMLDocument): T[] {
+function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, target?: HTMLElement): T[] {
     let evalRoot = evalLazyElement(_root)
-    domDocument ??= document
+    let domDocument = (target?.ownerDocument ?? document)
     let results: T[] = []
     for (const i of evalRoot) {
         if (i == null)
@@ -47,13 +47,19 @@ function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, domDocume
             results.push(domDocument.createTextNode(`${i}`) as T)
             continue
         }
-        /*else if (i.tag instanceof AbstractDomNodeWithState) {
+        else if (i.tag instanceof AbstractDomNodeWithState) {
             let state = new DOMState(i.tag.initialState)
             let stateMapping = i.tag.stateMapping
-            //i = toArray(stateMapping(state))[0]
-        }*/
+            let abstractElt = stateMapping(state)
+            let instance = renderToDom(abstractElt, target ?? document.body)
+            state.subscribe(() => {
+                instance.update(stateMapping(state))
+            })
+            continue
+        }
         const result = domDocument.createElement(i.tag) as HTMLElement
         for (const k in i.attrs) {
+            if (k == '__source') continue
             const val = i.attrs[k]
             if (k === 'style' && typeof(val) === 'object') {
                 for (const sk of Object.keys(val)) {
@@ -102,7 +108,7 @@ function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, domDocume
                     })
                 }
                 else {
-                    result.append(...toHtmlElement(child, domDocument))
+                    result.append(...toHtmlElement(child, target))
                 }
             }
         }
@@ -120,19 +126,19 @@ interface DomElementInstance {
 }
 
 export function renderToDom(elt: AbstractDomElement, target: HTMLElement): DomElementInstance {
-    const domElt = toDomElement(elt, target.ownerDocument)
+    const domElt = toDomElement(elt, target)
     target.append(domElt)
     return {
         $$virElement: elt,
         $$domElement: domElt,
         update(newElt: AbstractDomElement) {
             this.$$virElement = newElt
-            const newDomElement = toDomElement(this.$$virElement, target.ownerDocument)
-            const patcher = (dest: any, src: any) => dd.apply(dest, dd.diff(dest, src))
+            const newDomElement = toDomElement(this.$$virElement, target)
+            const patcher = (dest: any, src: any) =>  dd.apply(dest, dd.diff(dest, src))
             let success = patcher(this.$$domElement, newDomElement)
             if (!success) {
                 console.warn('vdtree: Diff couldn\'t be efficiently applied');
-                this.$$domElement.parentNode!.replaceChild(this.$$domElement, newDomElement)
+                this.$$domElement.parentNode!.replaceChild(newDomElement, this.$$domElement)
                 this.$$domElement = newDomElement
             }
         },

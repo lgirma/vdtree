@@ -2,6 +2,7 @@
 import {h} from '../AbstractDOM'
 import {withState} from "../AbstractState";
 import * as React from "../React";
+import {uuid} from "boost-web-core";
 
 export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => <span>{`Hello, ${subject}`}</span>
 
@@ -44,12 +45,13 @@ export const AbstractGreeter = withState('', name =>
 )
 
 interface TodoItem {
+    id: number
     task: string
     isDone: boolean
 }
 
 const initialTodoState = {
-    items: [{isDone: true, task: 'Sample task'}] as TodoItem[], showComplete: false, filter: '', newTask: ''
+    items: [{isDone: true, task: 'Sample task', id: 1}] as TodoItem[], showComplete: false, filter: '', newTask: ''
 }
 
 export const AbstractTodo = withState(initialTodoState, state =>
@@ -62,7 +64,7 @@ export const AbstractTodo = withState(initialTodoState, state =>
             state.get().items
                 .filter(t => state.get().showComplete || !t.isDone)
                 .filter(t => state.get().filter.length == 0 || t.task.toLowerCase().indexOf(state.get().filter.toLowerCase()) > -1)
-                .map(t => <div>
+                .map(t => <div id={"todo-item-" + t.id}>
                 <label>
                     <input type="checkbox"
                           checked={state.bind(
@@ -76,7 +78,7 @@ export const AbstractTodo = withState(initialTodoState, state =>
         <div>
             <input value={state.bind(s => s.newTask)} placeholder="New Item" />
             <button onclick={e => state.mutate(s => {
-                s.items.push({task: s.newTask, isDone: false})
+                s.items.push({task: s.newTask, isDone: false, id: s.items.length + 1})
                 s.newTask = ''
             })}>Add New</button>
         </div>
