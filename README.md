@@ -1,9 +1,13 @@
 # vdtree
 
-Compile abstract web components to DOM, react, svelte and more
+Write your components once; Use them in vanilla JS, React, Svelte, SSR and more
 
-* Write your web components once; use them in vanilla JS, React, Svelte, SSR, etc.
-* Written in Typescript
+Why `vdtree`?
+
+* You want to build a web component library targeting various frameworks
+* JSX support
+* Translate states to target framework way of doing it
+* Strong types (made using Typescript)
 
 ## Table of Contents
 
@@ -22,6 +26,7 @@ Compile abstract web components to DOM, react, svelte and more
   - [React](#react)
   - [SSR](#to-server-side-rendered-ssr-html)
   - [Svelte](#svelte)
+- [License](#license)
 
 ## Installation
 
@@ -43,15 +48,7 @@ yarn add vdtree
 
 Let's quickly create a simple abstract DOM tree and render it on the browser
 
-To the abstract DOM tree:
-
-```javascript
-import {h} from 'vdtree'
-
-let myDomTree = h('div', {}, 'Hello, World!')
-```
-
-or the JSX version:
+To create the abstract DOM tree using JSX:
 
 ```jsx
 /** @jsx h */
@@ -60,9 +57,17 @@ import {h} from 'vdtree'
 let HelloWorld = <div>Hello, World!</div>
 ```
 
-Then to targetting various frameworks:
+or the non-JSX version:
 
-**Vanilla Javascript**:
+```javascript
+import {h} from 'vdtree'
+
+let HelloWorld = h('div', {}, 'Hello, World!')
+```
+
+Then targeting various frameworks:
+
+**Vanilla Javascript (no framework)**:
 ```javascript
 import {renderToDom} from 'vdtree'
 renderToDom(HelloWorld, document.body)
@@ -97,19 +102,19 @@ console.log(
 
 An abstract greeter component is a pure function that accepts name as a prop and greets with that name.
 
-```javascript
-const AbstractGreeter =
-        props => h('div', {}, `Hello, ${props.name}`)
-```
-
-or in JSX:
-
 ```jsx
 /** @jsx h */
 import {h} from 'vdtree'
 
 const AbstractGreeter =
         props => <div>Hello, {props.name}</div>
+```
+
+or in non-JSX:
+
+```javascript
+const AbstractGreeter =
+        props => h('div', {}, `Hello, ${props.name}`)
 ```
 
 Then using it in various targets:
@@ -234,8 +239,8 @@ You can mix vanilla events style and react style event handler names:
 
 ```jsx
 // Both are valid
-<button onclick={...} />
-<button onClick={...} />
+onclick={...}
+onClick={...}
 ```
 
 ## Custom Components
@@ -350,9 +355,41 @@ state.mutate(prev => prev.items[1].name = '')
 state.mutate(prev => prev.items.push({name: ''}))
 ```
 
+You can also derive a read-only state from another one:
+
+```jsx
+// a, b, c and d are derived from the state of coefficients {c1, c2, c3}
+const AbstractQuadraticSolver = withState({c1: '0', c2: '0', c3: '0'}, coef => {
+          const {a, b, c} = {
+            a: parseFloat(coef.get().c1),
+            b: parseFloat(coef.get().c2),
+            c: parseFloat(coef.get().c3)
+          }
+          const d = b*b - 4*a*c
+          return <div>
+            <input value={coef.bind(i => i.c1)} placeholder="A" type="number"/> X<sup>2</sup> +
+            <input value={coef.bind(i => i.c2)} placeholder="B" type="number"/> X +
+            <input value={coef.bind(i => i.c3)} placeholder="C" type="number"/> = 0
+            <div>
+              {d < 0
+                      ? 'No solution'
+                      : <div>
+                        X1 = {(- b + Math.sqrt(d)) / (2*a)},
+                        X2 = {(- b - Math.sqrt(d)) / (2*a)}
+                      </div>
+              }
+            </div>
+          </div>
+        }
+)
+```
+
 ## Rendering to the browser DOM
 
-To render static abstract DOM into an actual DOM in the browser,
+Use
+
+* `renderToDom()` method to render an abstract component to DOM
+* `toDomElement()` method to create a DOM element from abstract component
 
 ```jsx
 /** @jsx h */
@@ -400,11 +437,14 @@ Rather than doing a complete replacement, it will patch the changes efficiently.
 To render a static virtual DOM tree in a react component, use the `toReactComponent()` method.
 
 ```jsx
+// AbstractHelloWorld.tsx
+export const AbstractHelloWorld = <div>Hello, World!</div>
+
+// ReactHelloWorld.tsx
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {toReactComponent} from "vdtree"
 
-const AbstractHelloWorld = h('div', {}, 'Hello, World!')
 const ReactHelloWorld = toReactComponent(AbstractHelloWorld, React)
 
 ReactDOM.render(<ReactHelloWorld/>, document.body)
@@ -415,17 +455,13 @@ Note that we had to pass `React` object as the second argument for `toReactCompo
 A simple greeter example,
 
 ```jsx
-import React from 'react'
-import ReactDOM from 'react-dom'
-import {toReactComponent, h} from 'vdtree'
-
-const AbstractGreeter = ({name = ''}) =>
-    h('div', {class: 'active'}, `Hello, ${name}`)
-
+// AbstractGreeter.tsx
+export const AbstractGreeter = 
+        ({name = ''}) => <div>Hello, {name}</div>
+                
+// ReactGreeter.tsx
 const ReactGreeter = toReactComponent(AbstractGreeter, React)
-
-ReactDOM.render(<ReactGreeter name="React"/>, 
-    document.getElementById('app'))
+ReactDOM.render(<ReactGreeter name="React"/>, document.body)
 ```
 
 You can also include abstract components in React components
@@ -443,17 +479,18 @@ function ReactCounter({startWith = 0}) {
   </div>
 }
 
-ReactDOM.render(<ReactCounter startWith={3}/>, document.getElementById('app'))
+ReactDOM.render(<ReactCounter startWith={3}/>, document.body)
 ```
 
-The opposite is also possible. That is, including React components in abstract components
+Including React components in abstract components is also possible.
+However, you will lose the ability of rendering the component to other targets.
 
 ```jsx
 import {Button} from "@chakra-ui/react"
 
-h('div', {}, [
-  h(Button, {colorScheme: 'blue'}, 'Click Me')
-])
+<div>
+    <Button colorScheme="blue">Click Me</Button>
+</div>
 ```
 
 ## To Server-Side Rendered (SSR) HTML
@@ -525,3 +562,7 @@ const MyComp = <button onclick={e => alert('Clicked!')}>Click Me</button>
 ```
 
 **Note**: The `SvelteWrapper` will always create a top-level `<div>` tag.
+
+## License
+
+ISC License

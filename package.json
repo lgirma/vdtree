@@ -1,7 +1,7 @@
 {
   "name": "vdtree",
-  "version": "0.2.0",
-  "description": "Compile abstract web components to DOM, react, svelte and more",
+  "version": "0.3.0",
+  "description": "Write your components once; Use them in vanilla JS, React, Svelte, SSR and more",
   "module": "dist/vdtree.es.js",
   "main": "dist/vdtree.umd.js",
   "types": "dist/index.d.ts",
