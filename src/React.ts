@@ -17,10 +17,13 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
     }
     root = roots[0]
     if (isFunc(root)) {
-        return toReactComponent(root as any, React, key) as any
+        return toReactComponent(root, React, key) as any
     }
     else if (root.tag instanceof AbstractDomNodeWithState) {
-        return toReactComponent(root as any, React, key) as any
+        return toReactComponent(root, React, key) as any
+    }
+    else if (isFunc(root.tag)) {
+        return toJsxElement(root.tag(root.attrs), React, key) as any
     }
     let attrs: any = {}
     if (key != null) attrs.key = key;
@@ -28,6 +31,22 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
     for (const k of Object.keys(rootAttrs)) {
         const v = rootAttrs[k]
         if (k === 'class') attrs.className = v
+        // binding expressions:
+        else if (v instanceof ValueBinding) {
+            let stateVal = v.get(v.state.get())
+            let bindingEL = e => v.set(v.state, e.target.type == 'checkbox' ? e.target.checked : e.target.value)
+            if (k == 'checked') {
+                attrs.checked = !!stateVal
+            }
+            else if (k == 'value') {
+                attrs.value = stateVal
+            }
+            else {
+                attrs[k] = stateVal
+                console.warn('vdiff: Binding to non-value attribute ' + k)
+            }
+            attrs.onChange = bindingEL
+        }
         else if (k == 'style' && typeof v == 'string') {
             attrs.style = styleToObject(v)
         }
@@ -56,16 +75,26 @@ export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomE
 
 export function toReactComponent<TProps, T extends JSX.Element>(
     vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
-    if (typeof(vdComponent) == 'function' && !((vdComponent as any).tag instanceof  AbstractDomNodeWithState))
-        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
-    else if (typeof vdComponent == 'object' && vdComponent.tag instanceof AbstractDomNodeWithState) {
-        return function () {
-            const hook = React.useState(vdComponent.tag.initialState)
+    const {createElement, useState} = React
+    if ((vdComponent as any).tag instanceof AbstractDomNodeWithState) {
+        return createElement(function () {
+            const stateComp = vdComponent as AbstractDomElement<AbstractDomNodeWithState>
+            const hook = useState(stateComp.tag.basedOn)
             const stateWrapper = new ReactHooksState(hook)
-            let virDomTree = vdComponent.tag.stateMapping(stateWrapper)
+            let virDomTree = stateComp.tag.stateMapping(stateWrapper)
             return toJsxElement(virDomTree, React, key)
-        }
+        })
     }
+    else if (vdComponent instanceof AbstractDomNodeWithState) {
+        return createElement(function () {
+            const hook = useState(vdComponent.basedOn)
+            const stateWrapper = new ReactHooksState(hook)
+            let virDomTree = vdComponent.stateMapping(stateWrapper)
+            return toJsxElement(virDomTree, React, key)
+        })
+    }
+    if (typeof(vdComponent) == 'function')
+        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
     return () => toJsxElement(vdComponent as any, React, key)
 }
 

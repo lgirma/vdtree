@@ -28,6 +28,15 @@ export const AbstractCounter = withState(0,count =>
     </div>
 )
 
+export const AbstractTemperatureCounter = withState(0,count =>
+    <div>
+        <div style={{color: `rgb(${255-count.get()}, 0, ${count.get()})`}}><b>{count.get()}</b></div>
+        <button onclick={e => count.update(c => c + 10)}>+</button>
+        <button onClick={e => count.update(c => c - 10)}>-</button>
+        <button onClick={e => count.set(0)}>Reset</button>
+    </div>
+)
+
 export const AbstractAgreement = withState({agree: false}, state =>
     <div>
         <label>
@@ -121,7 +130,7 @@ export const AbstractTodo = withState(initialTodoState, state =>
     </div>
 )
 
-export const SamplesPage = () => <div>
+export const SamplesPage = <div>
     <h3>Static Component</h3>
     <div>Static Text</div>
 
@@ -130,6 +139,9 @@ export const SamplesPage = () => <div>
 
     <h3>Counter</h3>
     <AbstractCounter />
+
+    <h3>Counter With Temperature</h3>
+    <AbstractTemperatureCounter />
 
     <h3>Greeter</h3>
     <AbstractGreeter />

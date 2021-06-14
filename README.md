@@ -17,15 +17,15 @@ Why `vdtree`?
     - [Greeter](#greeter)
     - [Counter](#counter)
 - [Getting Started](#getting-started)
-  - [Styles](#styles)
-  - [Event Handlers](#event-handlers)
-  - [Components With Props](#components-with-props)
-  - [State](#state)
+    - [Styles](#styles)
+    - [Event Handlers](#event-handlers)
+    - [Components With Props](#components-with-props)
+    - [State](#state)
 - Compile to Various Frameworks
-  - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
-  - [React](#react)
-  - [SSR](#to-server-side-rendered-ssr-html)
-  - [Svelte](#svelte)
+    - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
+    - [React](#react)
+    - [SSR](#to-server-side-rendered-ssr-html)
+    - [Svelte](#svelte)
 - [License](#license)
 
 ## Installation
@@ -84,7 +84,7 @@ ReactDOM.render(<ReactHelloWorld />, document.body)
 **Svelte**:
 ```jsx
 <script>
-  import {SvelteWrapper} from 'vdtree'
+    import {SvelteWrapper} from 'vdtree'
 </script>
 
 <SvelteWrapper dom={HelloWorld} />
@@ -107,14 +107,14 @@ An abstract greeter component is a pure function that accepts name as a prop and
 import {h} from 'vdtree'
 
 const AbstractGreeter =
-        props => <div>Hello, {props.name}</div>
+    props => <div>Hello, {props.name}</div>
 ```
 
 or in non-JSX:
 
 ```javascript
 const AbstractGreeter =
-        props => h('div', {}, `Hello, ${props.name}`)
+    props => h('div', {}, `Hello, ${props.name}`)
 ```
 
 Then using it in various targets:
@@ -144,10 +144,10 @@ An abstract counter component using `withState(initialState, state => components
 /** @jsx h */
 import {h, withState} from 'vdtree'
 
-const Counter = withState(0, count => 
+const Counter = withState(0, count =>
     <div>
-      <div>{count.get()}</div>
-      <button onclick={e => count.update(c => c + 1)}>+</button>
+        <div>{count.get()}</div>
+        <button onclick={e => count.update(c => c + 1)}>+</button>
     </div>)
 ```
 
@@ -189,8 +189,8 @@ To create the `<div>` with attributes and children,
 
 ```javascript
 h('div', {class: 'container'}, [
-  h('div', {}, 'item1'),
-  h('div', {}, 'item2')
+    h('div', {}, 'item1'),
+    h('div', {}, 'item2')
 ])
 ```
 
@@ -227,9 +227,9 @@ You can use event handlers, as you would, using the JS DOM APIs
 <div onclick={e => alert('Clicked!')}></div>
 
 <form onsubmit={e => e.preventDefault()}>
-  <input placeholder="User name" id="userName" />
-  <input type="password" required={true} id="userName" />
-  <input type="submit" value="Login" />
+    <input placeholder="User name" id="userName" />
+    <input type="password" required={true} id="userName" />
+    <input type="submit" value="Login" />
 </form>
 ```
 
@@ -250,8 +250,8 @@ Lazy evaluated components can be used in the abstract DOM.
 A simple component with props:
 
 ```jsx
-const Greeter = 
-        ({name = ''}) => <div>Hello, {name}</div>
+const Greeter =
+    ({name = ''}) => <div>Hello, {name}</div>
 ```
 
 or as a full-blown function:
@@ -266,9 +266,9 @@ Such components can also be included in the virtual DOM tree as:
 
 ```jsx
 <div>
-  Greetings output
-  <Greeter name="John" />
-  <hr />
+    Greetings output
+    <Greeter name="John" />
+    <hr />
 </div>
 ```
 
@@ -324,14 +324,14 @@ export const AbstractGreeter = withState('', name =>
 
 // binding with custom property expression
 const initialState = {name: '', email: '', isCompany: false}
-export const AbstractContact = withState(initialState, state => 
-  <div>
-    <input value={state.bind(s => s.name)} />
-    <input value={state.bind(s => s.email)} type="email" />
-    <label>
-        <input type="checkbox" checked={state.bind(s => s.isCompany)} /> Is Company
-    </label>
-  </div>
+export const AbstractContact = withState(initialState, state =>
+    <div>
+        <input value={state.bind(s => s.name)} />
+        <input value={state.bind(s => s.email)} type="email" />
+        <label>
+            <input type="checkbox" checked={state.bind(s => s.isCompany)} /> Is Company
+        </label>
+    </div>
 )
 ```
 
@@ -360,27 +360,25 @@ You can also derive a read-only state from another one:
 ```jsx
 // a, b, c and d are derived from the state of coefficients {c1, c2, c3}
 const AbstractQuadraticSolver = withState({c1: '0', c2: '0', c3: '0'}, coef => {
-          const {a, b, c} = {
-            a: parseFloat(coef.get().c1),
-            b: parseFloat(coef.get().c2),
-            c: parseFloat(coef.get().c3)
-          }
-          const d = b*b - 4*a*c
-          return <div>
+        const a = parseFloat(coef.get().c1)
+        const b = parseFloat(coef.get().c2)
+        const c = parseFloat(coef.get().c3)
+        const d = b*b - 4*a*c
+        return <div>
             <input value={coef.bind(i => i.c1)} placeholder="A" type="number"/> X<sup>2</sup> +
             <input value={coef.bind(i => i.c2)} placeholder="B" type="number"/> X +
             <input value={coef.bind(i => i.c3)} placeholder="C" type="number"/> = 0
             <div>
-              {d < 0
-                      ? 'No solution'
-                      : <div>
+                {d < 0
+                    ? 'No solution'
+                    : <div>
                         X1 = {(- b + Math.sqrt(d)) / (2*a)},
                         X2 = {(- b - Math.sqrt(d)) / (2*a)}
-                      </div>
-              }
+                    </div>
+                }
             </div>
-          </div>
-        }
+        </div>
+    }
 )
 ```
 
@@ -456,9 +454,9 @@ A simple greeter example,
 
 ```jsx
 // AbstractGreeter.tsx
-export const AbstractGreeter = 
-        ({name = ''}) => <div>Hello, {name}</div>
-                
+export const AbstractGreeter =
+    ({name = ''}) => <div>Hello, {name}</div>
+
 // ReactGreeter.tsx
 const ReactGreeter = toReactComponent(AbstractGreeter, React)
 ReactDOM.render(<ReactGreeter name="React"/>, document.body)
@@ -472,11 +470,11 @@ const AbstractCounterInfo = ({count = 0}) => h('div', {}, `${count}`)
 const CounterInfo = toReactComponent(AbstractCounterInfo, React)
 
 function ReactCounter({startWith = 0}) {
-  const [c, setC] = useState(startWith)
-  return <div>
-    <CounterInfo count={c}/>
-    <button onClick={e => setC(prev => prev + 1)}>+</button>
-  </div>
+    const [c, setC] = useState(startWith)
+    return <div>
+        <CounterInfo count={c}/>
+        <button onClick={e => setC(prev => prev + 1)}>+</button>
+    </div>
 }
 
 ReactDOM.render(<ReactCounter startWith={3}/>, document.body)
@@ -489,7 +487,7 @@ However, you will lose the ability of rendering the component to other targets.
 import {Button} from "@chakra-ui/react"
 
 <div>
-    <Button colorScheme="blue">Click Me</Button>
+<Button colorScheme="blue">Click Me</Button>
 </div>
 ```
 
@@ -509,8 +507,8 @@ Multiple top-level elements can also be used as
 
 ```javascript
 toHtmlString([
-  h('div', {}, 'Item 1'),
-  h('div', {}, 'Item 2'),
+    h('div', {}, 'Item 1'),
+    h('div', {}, 'Item 2'),
 ])
 ```
 
@@ -527,9 +525,9 @@ You can use the abstract DOM in a svelte component using `SvelteWrapper` import
 
 ```jsx
 <script>
-  import {h, SvelteWrapper} from 'vdtree'
+    import {h, SvelteWrapper} from 'vdtree'
 
-  let myDom = h('div', {}, 'Content')
+    let myDom = h('div', {}, 'Content')
 </script>
 
 <SvelteWrapper dom={myDom}/>
@@ -541,7 +539,7 @@ A simple counter example:
 ```jsx
 // CounterInfo.tsx
 const AbstractCounterInfo = ({c = 1}) => <div>{c}</div>
-        
+
 // Counter.svelte
 <script>
     let count = 0
