@@ -22,7 +22,9 @@ export const AbstractRating = withState(0, rating =>
 export const AbstractCounter = withState(0,count =>
     <div>
         <div>{count.get()}</div>
-        <button onclick={e => count.update(c => c+1)}>+</button>
+        <button onclick={e => count.update(c => c + 1)}>+</button>
+        <button onClick={e => count.update(c => c - 1)}>-</button>
+        <button onClick={e => count.set(0)}>Reset</button>
     </div>
 )
 
@@ -42,6 +44,40 @@ export const AbstractGreeter = withState('', name =>
         <input value={name.bind()} placeholder="Name" />
         <div>Hello, {name.get()}</div>
     </div>
+)
+
+export const AbstractAdder = withState({a: '0', b: '0'}, args => {
+        const {a, b} = {a: parseFloat(args.get().a), b: parseFloat(args.get().b)}
+        return <div>
+            <input value={args.bind(i => i.a)} placeholder="A" type="number"/> +
+            <input value={args.bind(i => i.b)} placeholder="B" type="number"/> =
+            <span>{a + b}</span>
+        </div>
+    }
+)
+
+export const AbstractQuadraticSolver = withState({c1: '0', c2: '0', c3: '0'}, coef => {
+    const {a, b, c} = {
+        a: parseFloat(coef.get().c1),
+        b: parseFloat(coef.get().c2),
+        c: parseFloat(coef.get().c3)
+    }
+    const d = b*b - 4*a*c
+    return <div>
+            <input value={coef.bind(i => i.c1)} placeholder="A" type="number"/> X<sup>2</sup> +
+            <input value={coef.bind(i => i.c2)} placeholder="B" type="number"/> X +
+            <input value={coef.bind(i => i.c3)} placeholder="C" type="number"/> = 0
+            <div>
+                {d < 0
+                    ? 'No solution'
+                    : <div>
+                        X1 = {(- b + Math.sqrt(d)) / (2*a)},
+                        X2 = {(- b - Math.sqrt(d)) / (2*a)}
+                    </div>
+                }
+            </div>
+        </div>
+    }
 )
 
 interface TodoItem {
@@ -97,6 +133,12 @@ export const SamplesPage = () => <div>
 
     <h3>Greeter</h3>
     <AbstractGreeter />
+
+    <h3>Adder</h3>
+    <AbstractAdder />
+
+    <h3>Quadratic Calculator</h3>
+    <AbstractQuadraticSolver />
 
     <h3>Agreement</h3>
     <AbstractAgreement />

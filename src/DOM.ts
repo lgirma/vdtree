@@ -14,6 +14,7 @@ import {
     StateSubscription,
     ValueBinding
 } from "./AbstractState";
+import {type} from "os";
 const dd = new DiffDOM({valueDiffing: false});
 
 export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, target?: HTMLElement): T[] {
@@ -36,6 +37,17 @@ export function toDomElement<T extends Node>(root: OneOrMany<AbstractDomNode>, t
     return [''] as any
 }
 
+function renderStatefulComponent(basedOn, stateMapping, target) {
+    let state = basedOn instanceof AbstractReadableState
+        ? basedOn
+        : new DOMState(basedOn)
+    let abstractElt = stateMapping(state)
+    let instance = renderToDom(abstractElt, target ?? document.body)
+    state.subscribe(() => {
+        instance.update(stateMapping(state))
+    })
+}
+
 function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, target?: HTMLElement): T[] {
     let evalRoot = evalLazyElement(_root)
     let domDocument = (target?.ownerDocument ?? document)
@@ -48,13 +60,11 @@ function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, target?: 
             continue
         }
         else if (i.tag instanceof AbstractDomNodeWithState) {
-            let state = new DOMState(i.tag.initialState)
-            let stateMapping = i.tag.stateMapping
-            let abstractElt = stateMapping(state)
-            let instance = renderToDom(abstractElt, target ?? document.body)
-            state.subscribe(() => {
-                instance.update(stateMapping(state))
-            })
+            renderStatefulComponent(i.tag.basedOn, i.tag.stateMapping, target)
+            continue
+        }
+        else if (i instanceof AbstractDomNodeWithState) {
+            renderStatefulComponent(i.basedOn, i.stateMapping, target)
             continue
         }
         const result = domDocument.createElement(i.tag) as HTMLElement
@@ -99,13 +109,10 @@ function toHtmlElement<T extends Node|Text>(_root: AbstractDomElement, target?: 
                 if (typeof child == 'string' || typeof child == 'number' || typeof child == 'boolean' || typeof child == 'bigint')
                     result.append(domDocument.createTextNode(`${child}`) as T)
                 else if (child.tag instanceof AbstractDomNodeWithState) {
-                    let state = new DOMState(child.tag.initialState)
-                    let stateMapping = child.tag.stateMapping
-                    let abstractElt = stateMapping(state)
-                    let instance = renderToDom(abstractElt, result)
-                    state.subscribe(() => {
-                        instance.update(stateMapping(state))
-                    })
+                    renderStatefulComponent(child.tag.basedOn, child.tag.stateMapping, result)
+                }
+                else if (child instanceof AbstractDomNodeWithState) {
+                    renderStatefulComponent(child.basedOn, child.stateMapping, result)
                 }
                 else {
                     result.append(...toHtmlElement(child, target))

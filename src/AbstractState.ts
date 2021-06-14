@@ -1,5 +1,5 @@
 import {AbstractDomElement, AbstractDomNode} from "./AbstractDOM";
-import {Dict, OneOrMany, parseBindingExpression} from "boost-web-core";
+import {Dict, isFunc, OneOrMany, parseBindingExpression, toArray} from "boost-web-core";
 
 export type StateSubscription = string
 
@@ -30,23 +30,24 @@ export class ValueBinding<T> {
     }
 }
 
-export class DerivedReadonlyState<T, TBasedOn> extends AbstractReadableState<T> {
-    $$basedOn: AbstractReadableState<TBasedOn>
-    $$derivation: (state: AbstractReadableState<TBasedOn>) => T
+export class DerivedReadonlyState<T, TBasedOn extends AbstractReadableState[]> extends AbstractReadableState<T> {
+    $$basedOn: TBasedOn
+    $$derivation: (states: TBasedOn) => T
 
     get(): T { return this.$$derivation(this.$$basedOn) }
 
     subscribe(subscriber: any): StateSubscription {
-        return this.$$basedOn.subscribe(() => subscriber(this.get()))
+        this.$$basedOn.forEach(s => s.subscribe(() => subscriber(this.get())))
+        return ''
     }
 
     unsubscribe(s: StateSubscription) {
-        this.$$basedOn.unsubscribe(s)
+        //this.$$basedOn.unsubscribe(s)
     }
 
-    constructor(basedOn: AbstractReadableState<TBasedOn>, derivation: (state: AbstractReadableState<TBasedOn>) => T) {
+    constructor(basedOn: TBasedOn, derivation: (states: TBasedOn) => T) {
         super();
-        this.$$basedOn = basedOn
+        this.$$basedOn = basedOn ?? []
         this.$$derivation = derivation
     }
 }
@@ -58,23 +59,19 @@ export abstract class AbstractWritableState<T = any> extends AbstractReadableSta
     abstract mutate(reducer: (prev: T) => void): void
 }
 
-type StateMapping<TVal> = (forState: AbstractWritableState<TVal>) => AbstractDomElement
+type StateMapping<TVal, TStore extends AbstractReadableState<TVal>> = (forState: TStore) => AbstractDomElement
 
-export class AbstractDomNodeWithState<TVal = any> extends Function {
-    initialState: TVal
-    stateMapping: StateMapping<TVal>
+export class AbstractDomNodeWithState<TVal = any, TStore extends AbstractReadableState<TVal> = AbstractReadableState<TVal>> extends Function {
+    basedOn: TVal | TStore
+    stateMapping: StateMapping<TVal, TStore>
 
-    constructor(_initialState: TVal, _stateMap: StateMapping<TVal>) {
+    constructor(_initialState: TVal | TStore, _stateMap: StateMapping<TVal, TStore>) {
         super()
-        this.initialState = _initialState
+        this.basedOn = _initialState
         this.stateMapping = _stateMap
     }
 }
 
-export function withState<T>(initialValue: T, stateMapping: StateMapping<T>): AbstractDomNodeWithState<T> {
+export function withState<T, TBasedOn extends AbstractWritableState<T> = AbstractWritableState>(initialValue: T, stateMapping: StateMapping<T, TBasedOn>): AbstractDomNodeWithState<T, TBasedOn> {
     return new AbstractDomNodeWithState(initialValue, stateMapping)
-}
-
-export function withDerivedState<T, TBasedOn>(derivation: (state: AbstractReadableState<TBasedOn>) => T, stateMapping: StateMapping<T>): AbstractDomNodeWithState<T> {
-    return new AbstractDomNodeWithState(null as any as T, stateMapping)
 }
