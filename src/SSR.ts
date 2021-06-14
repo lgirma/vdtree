@@ -9,6 +9,7 @@ import {
 } from "./AbstractState";
 
 let eventHandlerCount = 0
+let stateCount = 0
 
 function renderStatefulComponent(basedOn, stateMapping) {
     let state = basedOn instanceof AbstractReadableState
@@ -18,11 +19,23 @@ function renderStatefulComponent(basedOn, stateMapping) {
     return evaluatedDomElementToHtml(abstractElt)
 }
 
+type SSRDomResult = {html: string, js: string, css: string}
+
 export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
-    const rootElements = toArray(roots)
+    const output = renderDomNodes(roots)
+    let result = `${output.html}`;
+    if (output.css.length > 0)
+        result += `<style>${output.css}</style>`
+    if (output.js.length > 0)
+        result += `<script>${output.js}</script>`
+    return result
+}
+
+export function renderDomNodes(roots: OneOrMany<AbstractDomNode>): SSRDomResult {
     let html = ''
     let js = ''
     let css = ''
+    const rootElements = toArray(roots)
     for (const root of rootElements) {
         if (typeof root == "string" || typeof root === 'bigint' || typeof root === 'number' || typeof root == 'boolean') {
             html += `${root}`
@@ -52,15 +65,8 @@ export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
             }
         })
     }
-    let result = `${html}`;
-    if (css.length > 0)
-        result += `<style>${css}</style>`
-    if (js.length > 0)
-        result += `<script>${js}</script>`
-    return result
+    return {html, js, css}
 }
-
-type SSRDomResult = {html?: string, js?: string, css?: string}
 
 function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
     let html = `<${root.tag}`
@@ -109,17 +115,10 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
                 if (typeof child === 'string' || typeof child === 'bigint' || typeof child === 'number' || typeof child == 'boolean')
                     html += child
                 else {
-                    let flatChildren = evalLazyElement(child)
-                    flatChildren.forEach(c => {
-                        if (typeof c === 'string' || typeof c === 'bigint' || typeof c === 'number' || typeof c == 'boolean')
-                            html += child
-                        else {
-                            let output = evaluatedDomElementToHtml(c)
-                            html += output.html
-                            css += output.css
-                            js += output.js
-                        }
-                    })
+                    let output = renderDomNodes(child)
+                    html += output.html
+                    css += output.css
+                    js += output.js
                 }
             }
         }
@@ -139,6 +138,7 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
 
 class SSRState<T> extends AbstractWritableState<T> {
     $$basedOn: T
+    $$id: number
     get(): T { return this.$$basedOn }
     subscribe(subscriber: any): StateSubscription { return '' }
     unsubscribe(s: StateSubscription) { }
@@ -152,5 +152,6 @@ class SSRState<T> extends AbstractWritableState<T> {
     constructor(initialValue: T) {
         super();
         this.$$basedOn = initialValue
+        this.$$id = ++stateCount
     }
 }

@@ -14,7 +14,7 @@ import {
     SamplesPage
 } from "./SampleComponents";
 
-let DemoPage = toReactComponent(SamplesPage, React)
+let DemoPage = toReactComponent(SamplesPage as any, React)
 
 ReactDOM.render(<DemoPage />, document.getElementById('app')!)
 
