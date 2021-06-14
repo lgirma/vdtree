@@ -22,7 +22,7 @@ describe('Abstract DOM Tests', () => {
 
     it('Evaluates lazy elements properly', () => {
         let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
-        let comp = evalLazyElement(h(lazyComponent, {name: 'vd-tree'}))
+        let comp = evalLazyElement(h(lazyComponent, {name: 'h-tree'}))
 
         expect(comp.length).to.equal(1)
         let topComp = comp[0] as AbstractDomElement
@@ -36,7 +36,7 @@ describe('Abstract DOM Tests', () => {
             h('div', {}, `Welcome, ${name}`),
             `Good bye, ${name}`,
         ]
-        let comps = evalLazyElement(h(lazyComponent, {name: 'vd-tree'})) as AbstractDomElement[]
+        let comps = evalLazyElement(h(lazyComponent, {name: 'h-tree'})) as AbstractDomElement[]
 
         expect(comps.length).to.equal(3)
         expect(comps[0].tag).to.equal('div')

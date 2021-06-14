@@ -65,7 +65,7 @@ describe('SSR Tests', () => {
     it('Generates HTML string for lazy components', () => {
         let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
         let comp = h('div', {}, [
-            h(lazyComponent, {name: 'vd-tree'}),
+            h(lazyComponent, {name: 'h-tree'}),
             h('a', {href: '#'}, 'Link')
         ])
 

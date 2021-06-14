@@ -14,7 +14,6 @@ import {
     StateSubscription,
     ValueBinding
 } from "./AbstractState";
-import {type} from "os";
 const dd = new DiffDOM({valueDiffing: false});
 
 export function toDom<T extends Node>(root: OneOrMany<AbstractDomNode>, target?: HTMLElement): T[] {

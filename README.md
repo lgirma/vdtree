@@ -19,7 +19,7 @@ Why `vdtree`?
 - [Getting Started](#getting-started)
   - [Styles](#styles)
   - [Event Handlers](#event-handlers)
-  - [Custom Components](#custom-components)
+  - [Components With Props](#components-with-props)
   - [State](#state)
 - Compile to Various Frameworks
   - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
@@ -243,11 +243,11 @@ onclick={...}
 onClick={...}
 ```
 
-## Custom Components
+## Components With Props
 
-Lazy evaluated custom components can be used in the abstract DOM.
+Lazy evaluated components can be used in the abstract DOM.
 
-A simple custom component:
+A simple component with props:
 
 ```jsx
 const Greeter = 
@@ -262,7 +262,7 @@ function Greeter({name = ''}) {
 }
 ```
 
-Custom components can also be included in the virtual DOM tree as:
+Such components can also be included in the virtual DOM tree as:
 
 ```jsx
 <div>
