@@ -1,4 +1,10 @@
-import {AbstractDomElement} from "../AbstractDOM";
+import {
+    AbstractDomElement,
+    AbstractDomNode,
+    AbstractFuncComponent,
+    DomElementChildren,
+    DomElementChildrenFrom
+} from "../AbstractDOM";
 import {isFunc, OneOrMany, toArray, kebabToCamelCase, uuid} from "boost-web-core";
 import {AbstractDomNodeWithState, AbstractWritableState, StateSubscription, ValueBinding} from "../AbstractState";
 
@@ -9,93 +15,121 @@ const styleToObject = (style: string): any => style.split(';').filter(s => s.len
         return a;
     }, {} as any);
 
-export function toJsxElement<T extends JSX.Element>(root: OneOrMany<AbstractDomElement>, React: any, key?: any): T {
+export function toReactComponent<TElement = any, TProps = any>(item: AbstractDomNode, React: any): (props: TProps) => TElement {
     const {createElement, Fragment} = React
+
+    if (typeof item == 'string' || typeof item == 'number' || typeof item == 'boolean' || typeof item == 'bigint') {
+        return () => createElement('span', null, item)
+    }
+    else if (item instanceof AbstractDomNodeWithState) {
+        return toStatefulComponent(item, React)
+    }
+    else if (item.tag instanceof AbstractDomNodeWithState) {
+        return toStatefulComponent(item.tag, React)
+    }
+    else if (isFunc(item)) {
+        // AFC
+        return (props) => toReactElement((item as any)(props), React)
+    }
+    else {
+        return () => toReactElement(item, React)
+    }
+}
+
+export function toReactElement<TElement = any>(root: OneOrMany<AbstractDomNode>, React: any): TElement {
+    const {Fragment, createElement} = React
+    let result = toReactElements(root, React)
+    if (result.length > 1)
+        return createElement(Fragment, null, ...result)
+    else if (result.length == 1)
+        return result[0] as TElement
+    console.warn('Cannot render empty React element', root)
+    return createElement('span')
+}
+
+function toStatefulComponent(comp: AbstractDomNodeWithState, React: any) {
+    const {useState} = React
+    return function (props) {
+        const hook = useState(comp.basedOn)
+        const stateWrapper = new ReactHooksState(hook)
+        let virDomTree = comp.stateMapping(stateWrapper)
+        return toReactElement(virDomTree, React)
+    }
+}
+
+export function toReactElements<TElement = any>(root: OneOrMany<AbstractDomNode>, React: any): TElement[] {
+    const {createElement} = React
+    let reactElements: any[] = []
     let roots = toArray(root)
-    if (roots.length > 1) {
-        return createElement(Fragment, {}, ...roots.map(r => toJsxElement(r, React, key)))
+
+    for (const item of roots) {
+        if (typeof item == 'string' || typeof item == 'number' || typeof item == 'boolean' || typeof item == 'bigint') {
+            reactElements.push(item)
+        }
+        else if (item instanceof AbstractDomNodeWithState) {
+            reactElements.push(createElement(toStatefulComponent(item, React)))
+        }
+        else if (item.tag instanceof AbstractDomNodeWithState) {
+            reactElements.push(createElement(toStatefulComponent(item.tag, React), item.attrs, item.children))
+        }
+        else if (isFunc(item.tag)) {
+            let rendered = (item.tag as any)(item.attrs ?? {})
+            if (rendered.type === undefined)
+                reactElements.push(toReactElements(rendered, React))
+            else
+                reactElements.push(createElement(item.tag, item.attrs, item.children))
+        }
+        else if (item.tag?.prototype instanceof React.Component) {
+            reactElements.push(createElement(item.tag, item.attrs, item.children))
+        }
+        else if (typeof item.tag == 'string') {
+            let elt = createElement(item.tag,
+                htmlAttrsToReactAttrs({...item.attrs}),
+                ...toReactElements(item.children, React))
+            reactElements.push(elt)
+        }
+        else {
+            console.error('vdtree: Unable to convert element to React element', item)
+        }
     }
-    root = roots[0]
-    if (isFunc(root)) {
-        return toReactComponent(root, React, key) as any
-    }
-    else if (root.tag instanceof AbstractDomNodeWithState) {
-        return toReactComponent(root, React, key) as any
-    }
-    else if (isFunc(root.tag)) {
-        return toJsxElement(root.tag(root.attrs), React, key) as any
-    }
-    let attrs: any = {}
-    if (key != null) attrs.key = key;
-    const rootAttrs = {...root.attrs}
-    for (const k of Object.keys(rootAttrs)) {
-        const v = rootAttrs[k]
-        if (k === 'class') attrs.className = v
+
+    return reactElements
+}
+
+function htmlAttrsToReactAttrs(htmlAttrs: any) {
+    let result: any = {}
+    for (const k of Object.keys(htmlAttrs)) {
+        const v = htmlAttrs[k]
+        if (k === 'class') result.className = v
         // binding expressions:
         else if (v instanceof ValueBinding) {
             let stateVal = v.get(v.state.get())
             let bindingEL = e => v.set(v.state, e.target.type == 'checkbox' ? e.target.checked : e.target.value)
             if (k == 'checked') {
-                attrs.checked = !!stateVal
+                result.checked = !!stateVal
             }
             else if (k == 'value') {
-                attrs.value = stateVal
+                result.value = stateVal
             }
             else {
-                attrs[k] = stateVal
+                result[k] = stateVal
                 console.warn('vdiff: Binding to non-value attribute ' + k)
             }
-            attrs.onChange = bindingEL
+            result.onChange = bindingEL
         }
         else if (k == 'style' && typeof v == 'string') {
-            attrs.style = styleToObject(v)
+            result.style = styleToObject(v)
         }
-        else if (k == 'for') attrs.htmlFor = v
-        else if (k == 'value') attrs.defaultValue = v
-        else if (k == 'checked') attrs.defaultChecked = v
+        else if (k == 'for') result.htmlFor = v
+        else if (k == 'value') result.defaultValue = v
+        else if (k == 'checked') result.defaultChecked = v
         // Events:
         else if (typeof(v) == 'function' && k.length > 3) {
-            attrs[`on${k[2].toUpperCase()}${k.slice(3)}`] = v
+            result[`on${k[2].toUpperCase()}${k.slice(3)}`] = v
         }
-        else attrs[k] = v
+        else result[k] = v
     }
-    if (root.children && root.children.length > 1)
-        return createElement(root.tag, attrs,
-            ...root.children.map((c) => (typeof c === 'string' || typeof c === 'bigint' || typeof c === 'number' || typeof c == 'boolean' || c == null) ? c : toJsxElement(c, React)))
-    else if (root.children && root.children.length == 1) {
-        let c = root.children[0]
-        if (root.tag === 'textarea')
-            return createElement(root.tag, {...attrs, defaultValue: c})
-        else
-            return createElement(root.tag, attrs, (typeof c === 'string' || typeof c === 'bigint' || typeof c === 'number' || typeof c == 'boolean' || c == null) ? c : toJsxElement(c, React))
-    }
-    else
-        return createElement(root.tag, attrs)
-}
-
-export function toReactComponent<TProps, T extends JSX.Element>(
-    vdComponent: AbstractDomElement | ((props: TProps) => AbstractDomElement), React: any, key?: any): ((props: TProps) => T) {
-    const {createElement, useState} = React
-    if ((vdComponent as any).tag instanceof AbstractDomNodeWithState) {
-        return createElement(function () {
-            const stateComp = vdComponent as AbstractDomElement<AbstractDomNodeWithState>
-            const hook = useState(stateComp.tag.basedOn)
-            const stateWrapper = new ReactHooksState(hook)
-            let virDomTree = stateComp.tag.stateMapping(stateWrapper)
-            return toJsxElement(virDomTree, React, key)
-        })
-    }
-    else if (vdComponent instanceof AbstractDomNodeWithState) {
-        return createElement(function () {
-            const hook = useState(vdComponent.basedOn)
-            const stateWrapper = new ReactHooksState(hook)
-            let virDomTree = vdComponent.stateMapping(stateWrapper)
-            return toJsxElement(virDomTree, React, key)
-        })
-    }
-    if (typeof(vdComponent) == 'function')
-        return (props: TProps) => toJsxElement<T>((vdComponent as any)(props), React, key)
-    return () => toJsxElement(vdComponent as any, React, key)
+    return result
 }
 
 export class ReactHooksState<T> extends AbstractWritableState<T> {

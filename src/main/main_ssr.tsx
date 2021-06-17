@@ -1,4 +1,3 @@
-/** @jsx h */
 import express from 'express';
 import {toHtmlString} from "../targets/SSR";
 import {SamplesPage} from "./SampleComponents";

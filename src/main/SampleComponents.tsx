@@ -1,7 +1,5 @@
-/** @jsx h */
 import {h} from '../AbstractDOM'
 import {withState} from "../AbstractState";
-import * as React from "../targets/React";
 import {uuid} from "boost-web-core";
 
 export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => <span>{`Hello, ${subject}`}</span>

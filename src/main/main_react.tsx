@@ -1,5 +1,5 @@
+/** @jsx React.createElement */
 import '../style.css'
-import {h} from "../AbstractDOM";
 import {toReactComponent} from "../targets/React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -14,7 +14,7 @@ import {
     SamplesPage
 } from "./SampleComponents";
 
-let DemoPage = toReactComponent(SamplesPage as any, React)
+let DemoPage = toReactComponent<React.ReactElement>(SamplesPage as any, React)
 
 ReactDOM.render(<DemoPage />, document.getElementById('app')!)
 

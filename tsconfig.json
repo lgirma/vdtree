@@ -7,6 +7,7 @@
     "declarationDir": "dist",
     "strict": true,
     "jsx": "react",
+    "jsxFactory": "h",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "types": ["vite/client"],
@@ -21,7 +22,7 @@
 
     "skipLibCheck": true,
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": true
   },
   "include": ["src/**/*.d.ts", "src/**/*.d.tsx", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte"]
 }

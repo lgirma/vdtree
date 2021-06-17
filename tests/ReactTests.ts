@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toJsxElement, toReactComponent} from "../src/targets/React";
+import {toReactElement, toReactComponent} from "../src/targets/React";
 import * as React from 'react'
 // @ts-ignore
 const chai = require('chai');
@@ -15,7 +15,7 @@ describe('React Tests', () => {
             'child-3'
         )
 
-        let jsxElt = toJsxElement(abstractTree, React)
+        let jsxElt = toReactElement(abstractTree, React)
         expect(jsxElt.type).to.equal('div')
         expect(jsxElt.props.children.length).to.equal(3)
         expect(jsxElt.props.children[0]).to.equal('child-1')
@@ -28,8 +28,8 @@ describe('React Tests', () => {
         let divWithJSStyle = h('div', {style: {color:'red', borderColor: 'red', MsTransform: 'rotate(10deg)'}})
         let divWithStringStyle = h('div', {style: 'color:red; border-color:red; -ms-transform: rotate(10deg);'})
 
-        let jsxJs = toJsxElement(divWithJSStyle, React)
-        let jsxString = toJsxElement(divWithStringStyle, React)
+        let jsxJs = toReactElement(divWithJSStyle, React)
+        let jsxString = toReactElement(divWithStringStyle, React)
 
         expect(jsxJs.props.style.color).to.equal('red')
         expect(jsxJs.props.style.borderColor).to.equal('red')
@@ -41,11 +41,21 @@ describe('React Tests', () => {
 
     it('Generates JSX from lazy components properly', () => {
         let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
-        let abstractTree = h('div', {}, [
-            h(lazyComponent, {name: 'React'})
-        ])
+        let abstractTree = h('div', {}, h(lazyComponent, {name: 'React'}))
 
-        let jsxElt = toJsxElement(abstractTree, React)
+        let jsxElt = toReactElement(abstractTree, React)
+        expect(jsxElt.type).to.equal('div')
+        expect(jsxElt.props.children[0].type).to.equal('div')
+        expect(jsxElt.props.children[0].props.children).to.equal('Hello, React')
+    })
+
+    it('Retains React function components', () => {
+        let reactFC = ({name = ''}) => React.createElement('div', {}, `Hello, ${name}`)
+        let root = h('div', {},
+            h(reactFC, {name: 'React'})
+        )
+
+        let jsxElt = toReactElement(root, React)
         expect(jsxElt.type).to.equal('div')
         expect(typeof jsxElt.props.children.type).to.equal('function')
         expect(jsxElt.props.children.props.name).to.equal('React')
@@ -57,7 +67,7 @@ describe('React Tests', () => {
             h('div', {}, 'child-2')
         ]
 
-        let jsxElt = toJsxElement(abstractTree, React)
+        let jsxElt = toReactElement(abstractTree, React)
         expect(jsxElt.type).to.equal(React.Fragment)
         expect(jsxElt.props.children.length).to.equal(2)
         expect(jsxElt.props.children[0].props.children).to.equal('child-1')

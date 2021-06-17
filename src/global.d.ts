@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 /// <reference types="vite/client" />
 
-declare namespace JSX {
+/*declare namespace JSX {
     interface Element {}
-}
+}*/
