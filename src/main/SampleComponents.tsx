@@ -6,13 +6,13 @@ import {uuid} from "boost-web-core";
 
 export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => <span>{`Hello, ${subject}`}</span>
 
-export const AbstractRating = withState(0, rating =>
+export const AbstractRating = ({maxVal = 5}) => withState(0, rating =>
     <div>
         <style>{`
             .star {cursor: pointer; font-size: 1.5em; color: darkorange;}
             .star:hover {font-weight: bold}
         `}</style>
-        {new Array(5).fill(0).map((v, i) =>
+        {new Array(maxVal).fill(0).map((v, i) =>
             <span class="star" onclick={() => rating.set(i+1)}>
                 {rating.get() > i ? '★' : '☆'}
             </span>)}
@@ -109,7 +109,7 @@ export const AbstractTodo = withState(initialTodoState, state =>
             state.get().items
                 .filter(t => state.get().showComplete || !t.isDone)
                 .filter(t => state.get().filter.length == 0 || t.task.toLowerCase().indexOf(state.get().filter.toLowerCase()) > -1)
-                .map(t => <div id={"todo-item-" + t.id}>
+                .map(t => <div>
                 <label>
                     <input type="checkbox"
                           checked={state.bind(
@@ -138,26 +138,26 @@ export const SamplesPage = <div>
     <AbstractHelloWorld subject="Vanilla JS" />
 
     <h3>Counter</h3>
-    <AbstractCounter />
+    {AbstractCounter}
 
     <h3>Counter With Temperature</h3>
-    <AbstractTemperatureCounter />
+    {AbstractTemperatureCounter}
 
     <h3>Greeter</h3>
-    <AbstractGreeter />
+    {AbstractGreeter}
 
     <h3>Adder</h3>
-    <AbstractAdder />
+    {AbstractAdder}
 
     <h3>Quadratic Calculator</h3>
-    <AbstractQuadraticSolver />
+    {AbstractQuadraticSolver}
 
     <h3>Agreement</h3>
-    <AbstractAgreement />
+    {AbstractAgreement}
 
     <h3>Rating</h3>
-    <AbstractRating />
+    <AbstractRating maxVal={6} />
 
     <h3>Todo</h3>
-    <AbstractTodo />
+    {AbstractTodo}
 </div>

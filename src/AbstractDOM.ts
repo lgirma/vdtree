@@ -34,12 +34,27 @@ export function h(tag: PrimitiveComponent|AbstractFuncComponent|CustomComponent,
             elt.attrs[k] = attrs[k]
     }
 
-    let flattenedChildren = [].concat.apply([], children as any)
-    flattenedChildren = flattenedChildren.filter(c => c != null)
-    if (flattenedChildren != null) {
-        flattenedChildren.forEach(c => {
-            if (c != null) elt.children.push(c)
-        })
+    for (const child of (children ?? [])) {
+        if (child == null) continue
+        if (Array.isArray(child)) {
+            let key = 0
+            for (const c of child) {
+                if (c == null) continue
+                if (c instanceof AbstractDomNodeWithState)
+                    c.key = `${key++}`
+                else if ((c as AbstractDomElement).attrs) {
+                    let domElt = c as AbstractDomElement
+                    key++
+                    if (!domElt.attrs.key)
+                        domElt.attrs.key = `${key}`
+                    if (!domElt.attrs.id)
+                        console.warn('vdtree: No id given for elements in a map/array in ', elt)
+                }
+                elt.children.push(c)
+            }
+        }
+        else
+            elt.children.push(child)
     }
     return elt
 }

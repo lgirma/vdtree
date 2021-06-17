@@ -64,10 +64,12 @@ type StateMapping<TVal, TStore extends AbstractReadableState<TVal>> = (forState:
 export class AbstractDomNodeWithState<TVal = any, TStore extends AbstractReadableState<TVal> = AbstractReadableState<TVal>> {
     basedOn: TVal | TStore
     stateMapping: StateMapping<TVal, TStore>
+    key: string
 
     constructor(_initialState: TVal | TStore, _stateMap: StateMapping<TVal, TStore>) {
         this.basedOn = _initialState
         this.stateMapping = _stateMap
+        this.key = ''
     }
 }
 

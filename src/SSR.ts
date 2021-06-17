@@ -1,4 +1,4 @@
-import {AbstractDomElement, AbstractDomNode, evalLazyElement} from "./AbstractDOM";
+import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement} from "./AbstractDOM";
 import {BOOL_ATTRS, VOID_ELEMENTS} from "./Common";
 import {OneOrMany, toArray, camelToKebabCase, isFunc, isEmpty, uuid} from "boost-web-core";
 import {
@@ -11,15 +11,21 @@ import {
 let eventHandlerCount = 0
 let stateCount = 0
 
-function renderStatefulComponent(basedOn, stateMapping) {
-    let state = basedOn instanceof AbstractReadableState
-        ? basedOn
-        : new SSRState(basedOn)
-    let abstractElt = stateMapping(state)
+function renderStatefulComponent(statefulComponent: AbstractDomNodeWithState) {
+    let state = statefulComponent.basedOn instanceof AbstractReadableState
+        ? statefulComponent.basedOn
+        : new SSRState(statefulComponent.basedOn)
+    let abstractElt = statefulComponent.stateMapping(state)
     return evaluatedDomElementToHtml(abstractElt)
 }
 
 type SSRDomResult = {html: string, js: string, css: string}
+
+function append(to: SSRDomResult, val: SSRDomResult) {
+    to.html += val.html
+    to.js += `${val.js}`
+    to.css += `${val.css}`
+}
 
 export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
     const output = renderDomNodes(roots)
@@ -32,40 +38,31 @@ export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
 }
 
 export function renderDomNodes(roots: OneOrMany<AbstractDomNode>): SSRDomResult {
-    let html = ''
-    let js = ''
-    let css = ''
+    let result: SSRDomResult = {html: '', css: '', js: ''}
     const rootElements = toArray(roots)
     for (const root of rootElements) {
-        if (typeof root == "string" || typeof root === 'bigint' || typeof root === 'number' || typeof root == 'boolean') {
-            html += `${root}`
+        if (root == null)
             continue
+        if (typeof root == "string" || typeof root === 'bigint' || typeof root === 'number' || typeof root == 'boolean') {
+            result.html += `${root}`
         }
-        let rootEvaluated = evalLazyElement(root)
-        rootEvaluated.forEach(re => {
-            if (typeof re == 'string' || typeof re === 'bigint' || typeof re === 'number' || typeof re == 'boolean')
-                html += `${re}`
-            else if (re.tag instanceof AbstractDomNodeWithState) {
-                let output = renderStatefulComponent(re.tag.basedOn, re.tag.stateMapping)
-                html += output.html
-                css += output.css
-                js += output.js
-            }
-            else if (re instanceof AbstractDomNodeWithState) {
-                let output = renderStatefulComponent(re.basedOn, re.stateMapping)
-                html += output.html
-                css += output.css
-                js += output.js
-            }
-            else {
-                let output = evaluatedDomElementToHtml(re)
-                html += output.html
-                css += output.css
-                js += output.js
-            }
-        })
+        else if (root instanceof AbstractDomNodeWithState) {
+            append(result, renderStatefulComponent(root))
+        }
+        else if (root.tag instanceof AbstractDomNodeWithState) {
+            append(result, renderStatefulComponent(root.tag))
+        }
+        else if (isFunc(root.tag)) {
+            let outputs = toArray((root.tag as AbstractFuncComponent)(root.attrs, root.children))
+            outputs.forEach(o => {
+                append(result, renderDomNodes(o))
+            })
+        }
+        else {
+            append(result, evaluatedDomElementToHtml(root))
+        }
     }
-    return {html, js, css}
+    return result
 }
 
 function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {

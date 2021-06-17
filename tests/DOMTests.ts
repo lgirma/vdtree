@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toDom, toDomElement} from "../src/DOM";
+import {toDomElements, toDomElement} from "../src/DOM";
 // @ts-ignore
 const chai = require('chai');
 const expect = chai.expect;
@@ -14,7 +14,7 @@ describe('DOM Tests', () => {
             'child-3'
         ])
 
-        let comp = toDom(abstractTree)
+        let comp = toDomElements(abstractTree)
         expect(comp.length).to.equal(1)
         let compFirst = comp[0] as HTMLElement
         let synthetic = document.createElement('div')
@@ -54,7 +54,7 @@ describe('DOM Tests', () => {
             h('div', {}, 'child-1'),
             h('div', {}, 'child-2'),
         ]
-        let domElts = toDom(abstractTree) as HTMLDivElement[]
+        let domElts = toDomElements(abstractTree) as HTMLDivElement[]
 
         expect(domElts[0].tagName).to.equal('DIV')
         expect(domElts[0].innerHTML).to.equal('child-1')
