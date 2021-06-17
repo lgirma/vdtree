@@ -1,6 +1,6 @@
-import {AbstractDomElement} from "./AbstractDOM";
+import {AbstractDomElement} from "../AbstractDOM";
 import {isFunc, OneOrMany, toArray, kebabToCamelCase, uuid} from "boost-web-core";
-import {AbstractDomNodeWithState, AbstractWritableState, StateSubscription, ValueBinding} from "./AbstractState";
+import {AbstractDomNodeWithState, AbstractWritableState, StateSubscription, ValueBinding} from "../AbstractState";
 
 const styleToObject = (style: string): any => style.split(';').filter(s => s.length)
     .reduce((a, b) => {

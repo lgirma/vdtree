@@ -1,10 +1,10 @@
-import {BOOL_ATTRS} from "./Common";
+import {BOOL_ATTRS} from "../Common";
 import {
     AbstractFuncComponent,
     AbstractDomElement,
     AbstractDomNode,
     evalLazyElement, h
-} from "./AbstractDOM";
+} from "../AbstractDOM";
 import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, uuid} from "boost-web-core";
 // @ts-ignore
 import {DiffDOM} from "diff-dom";
@@ -14,7 +14,7 @@ import {
     AbstractWritableState,
     StateSubscription,
     ValueBinding
-} from "./AbstractState";
+} from "../AbstractState";
 const dd = new DiffDOM({valueDiffing: false});
 
 export function toDomElements<T extends Node|Text>(root: OneOrMany<AbstractDomNode>, target?: HTMLElement): T[] {

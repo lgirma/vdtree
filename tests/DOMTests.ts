@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toDomElements, toDomElement} from "../src/DOM";
+import {toDomElements, toDomElement} from "../src/targets/DOM";
 // @ts-ignore
 const chai = require('chai');
 const expect = chai.expect;
@@ -8,11 +8,11 @@ const expect = chai.expect;
 describe('DOM Tests', () => {
 
     it('Generates DOM elements properly', () => {
-        let abstractTree = h('div', {}, [
+        let abstractTree = h('div', {},
             'child-1',
             h('child-2', {}, 'child-2-content'),
             'child-3'
-        ])
+        )
 
         let comp = toDomElements(abstractTree)
         expect(comp.length).to.equal(1)
@@ -39,10 +39,10 @@ describe('DOM Tests', () => {
 
     it('Generates HTML string for lazy components', () => {
         let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
-        let comp = h('div', {}, [
+        let comp = h('div', {},
             h(lazyComponent, {name: 'h-tree'}),
             h('a', {href: '#'}, 'Link')
-        ])
+        )
 
         expect(toDomElement<HTMLDivElement>(comp).outerHTML).to.equal(
             '<div><div>Hello, h-tree</div><a href="#">Link</a></div>'

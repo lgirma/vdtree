@@ -1,6 +1,6 @@
 <script lang="ts">
     //import {AbstractDomElement} from "./AbstractDOM";
-    import {h} from './AbstractDOM'
+    import {h} from '../AbstractDOM'
     import {renderToDom} from './DOM'
     import { onMount } from 'svelte';
     import {isFunc} from "boost-web-core";

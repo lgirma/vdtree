@@ -1,6 +1,6 @@
 import '../style.css'
 import {h} from "../AbstractDOM";
-import {toReactComponent} from "../React";
+import {toReactComponent} from "../targets/React";
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {useState} from "react";

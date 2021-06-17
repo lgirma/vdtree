@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toJsxElement, toReactComponent} from "../src/React";
+import {toJsxElement, toReactComponent} from "../src/targets/React";
 import * as React from 'react'
 // @ts-ignore
 const chai = require('chai');
@@ -9,11 +9,11 @@ const expect = chai.expect;
 describe('React Tests', () => {
 
     it('Generates JSX Elements properly', () => {
-        let abstractTree = h('div', {}, [
+        let abstractTree = h('div', {},
             'child-1',
             h('child-2', {}, 'child-2-content'),
             'child-3'
-        ])
+        )
 
         let jsxElt = toJsxElement(abstractTree, React)
         expect(jsxElt.type).to.equal('div')

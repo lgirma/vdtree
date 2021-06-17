@@ -1,6 +1,6 @@
 /** @jsx h */
 import express from 'express';
-import {toHtmlString} from "../SSR";
+import {toHtmlString} from "../targets/SSR";
 import {SamplesPage} from "./SampleComponents";
 import {h} from '../AbstractDOM'
 import {withState} from "../AbstractState";

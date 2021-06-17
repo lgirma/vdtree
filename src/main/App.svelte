@@ -1,5 +1,5 @@
 <script>
-    import SvelteWrapper from '../SvelteWrapper.svelte'
+    import SvelteWrapper from '../targets/SvelteWrapper.svelte'
     import {SamplesPage} from "./SampleComponents";
 </script>
 

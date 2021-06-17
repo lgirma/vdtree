@@ -1,12 +1,12 @@
-import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement} from "./AbstractDOM";
-import {BOOL_ATTRS, VOID_ELEMENTS} from "./Common";
+import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement} from "../AbstractDOM";
+import {BOOL_ATTRS, VOID_ELEMENTS} from "../Common";
 import {OneOrMany, toArray, camelToKebabCase, isFunc, isEmpty, uuid} from "boost-web-core";
 import {
     AbstractDomNodeWithState,
     AbstractReadableState,
     AbstractWritableState,
     StateSubscription, ValueBinding
-} from "./AbstractState";
+} from "../AbstractState";
 
 let eventHandlerCount = 0
 let stateCount = 0

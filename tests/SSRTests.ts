@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toHtmlString} from "../src/SSR";
+import {toHtmlString} from "../src/targets/SSR";
 // @ts-ignore
 const chai = require('chai');
 const expect = chai.expect;
@@ -8,11 +8,11 @@ const expect = chai.expect;
 describe('SSR Tests', () => {
 
     it('Generates basic HTML', () => {
-        let abstractTree = h('div', {}, [
+        let abstractTree = h('div', {},
             'child-1',
             h('child-2', {}),
             'child-3'
-        ])
+        )
 
         expect(toHtmlString(abstractTree)).to.equal(
             '<div>child-1<child-2></child-2>child-3</div>')
@@ -29,9 +29,9 @@ describe('SSR Tests', () => {
     })
 
     it('Generates HTML string for attributes', () => {
-        let abstractTree = h('div', {a: 'aVal', b: true, c: 1}, [
+        let abstractTree = h('div', {a: 'aVal', b: true, c: 1},
             h('child', {b: null, c: 'cVal', d: 1}, 'child-content')
-        ])
+        )
 
         expect(toHtmlString(abstractTree)).to.equal(
             '<div a="aVal" b="true" c="1"><child c="cVal" d="1">child-content</child></div>')
@@ -64,10 +64,10 @@ describe('SSR Tests', () => {
 
     it('Generates HTML string for lazy components', () => {
         let lazyComponent = ({name = ''}) => h('div', {}, `Hello, ${name}`)
-        let comp = h('div', {}, [
+        let comp = h('div', {},
             h(lazyComponent, {name: 'h-tree'}),
             h('a', {href: '#'}, 'Link')
-        ])
+        )
 
         expect(toHtmlString(comp)).to.equal(
             '<div><div>Hello, h-tree</div><a href="#">Link</a></div>'
