@@ -61,12 +61,11 @@ export abstract class AbstractWritableState<T = any> extends AbstractReadableSta
 
 type StateMapping<TVal, TStore extends AbstractReadableState<TVal>> = (forState: TStore) => AbstractDomElement
 
-export class AbstractDomNodeWithState<TVal = any, TStore extends AbstractReadableState<TVal> = AbstractReadableState<TVal>> extends Function {
+export class AbstractDomNodeWithState<TVal = any, TStore extends AbstractReadableState<TVal> = AbstractReadableState<TVal>> {
     basedOn: TVal | TStore
     stateMapping: StateMapping<TVal, TStore>
 
     constructor(_initialState: TVal | TStore, _stateMap: StateMapping<TVal, TStore>) {
-        super()
         this.basedOn = _initialState
         this.stateMapping = _stateMap
     }
