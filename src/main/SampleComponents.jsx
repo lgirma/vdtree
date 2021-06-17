@@ -1,3 +1,4 @@
+/** @jsx h */
 import {h} from '../AbstractDOM'
 import {withState} from "../AbstractState";
 import {uuid} from "boost-web-core";
@@ -87,14 +88,8 @@ export const AbstractQuadraticSolver = withState({c1: '0', c2: '0', c3: '0'}, co
     }
 )
 
-interface TodoItem {
-    id: number
-    task: string
-    isDone: boolean
-}
-
 const initialTodoState = {
-    items: [{isDone: true, task: 'Sample task', id: 1}] as TodoItem[], showComplete: false, filter: '', newTask: ''
+    items: [{isDone: true, task: 'Sample task', id: 1}], showComplete: false, filter: '', newTask: ''
 }
 
 export const AbstractTodo = withState(initialTodoState, state =>
@@ -111,8 +106,8 @@ export const AbstractTodo = withState(initialTodoState, state =>
                 <label>
                     <input type="checkbox"
                           checked={state.bind(
-                              s => s.items.find(j => j == t)!.isDone,
-                              (s, v) => s.mutate(prev => prev.items.find(j => j == t)!.isDone = v))} />
+                              s => s.items.find(j => j == t).isDone,
+                              (s, v) => s.mutate(prev => prev.items.find(j => j == t).isDone = v))} />
                               {t.task}
                 </label>
             </div>)

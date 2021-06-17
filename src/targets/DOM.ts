@@ -61,13 +61,13 @@ function abstractDomElementToDomElements<T extends Node|Text>(root: AbstractDomE
         return [mountStatefulComponent(root.tag, target).$$domElement as T]
     }
     else if (isFunc(root.tag)) {
-        return toDomElements<T>(toArray((root.tag as AbstractFuncComponent)(root.attrs, root.children)))
+        return toDomElements<T>(toArray((root.tag as AbstractFuncComponent)(root.props, root.children)))
     }
 
     const result = domDocument.createElement(root.tag) as HTMLElement
-    for (const k in root.attrs) {
+    for (const k in root.props) {
         if (k == '__source') continue
-        const val = root.attrs[k]
+        const val = root.props[k]
         if (k === 'style' && typeof (val) === 'object') {
             for (const sk of Object.keys(val)) {
                 const sv = val[sk]
@@ -133,9 +133,9 @@ export function renderToDom(elt: AbstractDomElement, target: HTMLElement, defer 
         },
         newAttrs(attrs: Dict<any>|((prev: Dict<any>) => Dict<any>)) {
             if (typeof attrs == 'function')
-                this.$$virElement.attrs = attrs(this.$$virElement.attrs)
+                this.$$virElement.props = attrs(this.$$virElement.props)
             else
-                this.$$virElement.attrs = attrs
+                this.$$virElement.props = attrs
             this.update(this.$$virElement)
         }
     }

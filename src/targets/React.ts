@@ -15,7 +15,7 @@ const styleToObject = (style: string): any => style.split(';').filter(s => s.len
         return a;
     }, {} as any);
 
-export function toReactComponent<TElement = any, TProps = any>(item: AbstractDomNode, React: any): (props: TProps) => TElement {
+export function toReactComponent<TElement = JSX.Element, TProps = any>(item: AbstractDomNode, React: any): (props: TProps) => TElement {
     const {createElement, Fragment} = React
 
     if (typeof item == 'string' || typeof item == 'number' || typeof item == 'boolean' || typeof item == 'bigint') {
@@ -36,28 +36,28 @@ export function toReactComponent<TElement = any, TProps = any>(item: AbstractDom
     }
 }
 
-export function toReactElement<TElement = any>(root: OneOrMany<AbstractDomNode>, React: any): TElement {
+export function toReactElement<TElement = JSX.Element>(root: OneOrMany<AbstractDomNode>, React: any): TElement {
     const {Fragment, createElement} = React
     let result = toReactElements(root, React)
     if (result.length > 1)
         return createElement(Fragment, null, ...result)
     else if (result.length == 1)
-        return result[0] as TElement
+        return result[0] as any
     console.warn('Cannot render empty React element', root)
     return createElement('span')
 }
 
-function toStatefulComponent(comp: AbstractDomNodeWithState, React: any) {
+function toStatefulComponent<TElement = JSX.Element>(comp: AbstractDomNodeWithState, React: any) {
     const {useState} = React
     return function (props) {
         const hook = useState(comp.basedOn)
         const stateWrapper = new ReactHooksState(hook)
         let virDomTree = comp.stateMapping(stateWrapper)
-        return toReactElement(virDomTree, React)
+        return toReactElement<TElement>(virDomTree, React)
     }
 }
 
-export function toReactElements<TElement = any>(root: OneOrMany<AbstractDomNode>, React: any): TElement[] {
+export function toReactElements<TElement = JSX.Element>(root: OneOrMany<AbstractDomNode>, React: any): TElement[] {
     const {createElement} = React
     let reactElements: any[] = []
     let roots = toArray(root)
@@ -70,21 +70,21 @@ export function toReactElements<TElement = any>(root: OneOrMany<AbstractDomNode>
             reactElements.push(createElement(toStatefulComponent(item, React)))
         }
         else if (item.tag instanceof AbstractDomNodeWithState) {
-            reactElements.push(createElement(toStatefulComponent(item.tag, React), item.attrs, item.children))
+            reactElements.push(createElement(toStatefulComponent(item.tag, React), item.props, item.children))
         }
         else if (isFunc(item.tag)) {
-            let rendered = (item.tag as any)(item.attrs ?? {})
+            let rendered = (item.tag as any)(item.props ?? {})
             if (rendered.type === undefined)
                 reactElements.push(toReactElements(rendered, React))
             else
-                reactElements.push(createElement(item.tag, item.attrs, item.children))
+                reactElements.push(createElement(item.tag, item.props, item.children))
         }
         else if (item.tag?.prototype instanceof React.Component) {
-            reactElements.push(createElement(item.tag, item.attrs, item.children))
+            reactElements.push(createElement(item.tag, item.props, item.children))
         }
         else if (typeof item.tag == 'string') {
             let elt = createElement(item.tag,
-                htmlAttrsToReactAttrs({...item.attrs}),
+                htmlAttrsToReactAttrs({...item.props}),
                 ...toReactElements(item.children, React))
             reactElements.push(elt)
         }

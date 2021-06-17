@@ -42,6 +42,9 @@ or
 yarn add vdtree
 ```
 
+**Typescript Note**: Typescript currently has issues with `.tsx` templates with `vdtree`. 
+You may want to exclude tsx files in `tsconfig.json`
+
 ## Quick-Start Tutorials
 
 ### Hello World
@@ -94,7 +97,7 @@ ReactDOM.render(<ReactHelloWorld />, document.body)
 ```javascript
 import {toHtmlString} from 'vdtree'
 console.log(
-    toHtmlString(myDomTree)
+    toHtmlString(HelloWorld)
 )
 ```
 
@@ -462,24 +465,6 @@ const ReactGreeter = toReactComponent(AbstractGreeter, React)
 ReactDOM.render(<ReactGreeter name="React"/>, document.body)
 ```
 
-You can also include abstract components in React components
-
-```jsx
-const AbstractCounterInfo = ({count = 0}) => h('div', {}, `${count}`)
-
-const CounterInfo = toReactComponent(AbstractCounterInfo, React)
-
-function ReactCounter({startWith = 0}) {
-    const [c, setC] = useState(startWith)
-    return <div>
-        <CounterInfo count={c}/>
-        <button onClick={e => setC(prev => prev + 1)}>+</button>
-    </div>
-}
-
-ReactDOM.render(<ReactCounter startWith={3}/>, document.body)
-```
-
 Including React components in abstract components is also possible.
 However, you will lose the ability of rendering the component to other targets.
 
@@ -487,7 +472,7 @@ However, you will lose the ability of rendering the component to other targets.
 import {Button} from "@chakra-ui/react"
 
 <div>
-<Button colorScheme="blue">Click Me</Button>
+    <Button colorScheme="blue">Click Me</Button>
 </div>
 ```
 

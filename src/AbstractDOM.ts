@@ -11,7 +11,7 @@ export type DomElementChildrenFrom = Nullable<AbstractDomNode>|Nullable<Abstract
 
 export interface AbstractDomElement<TagType extends PrimitiveComponent|AbstractFuncComponent|CustomComponent = any> {
     tag: TagType
-    attrs: {[p: string]: any}
+    props: {[p: string]: any}
     children: DomElementChildren
 }
 
@@ -27,11 +27,11 @@ export type PrimitiveComponent = keyof HTMLElementTagNameMap
 export function h(tag: PrimitiveComponent|AbstractFuncComponent|CustomComponent,
                   attrs:{[key: string]: any} = {},
                   ...children: DomElementChildrenFrom[]) : AbstractDomElement {
-    const elt: AbstractDomElement = {tag, attrs: {}, children: []}
+    const elt: AbstractDomElement = {tag, props: {}, children: []}
     attrs ??= {}
     for (const k in attrs) {
         if (attrs[k] != undefined)
-            elt.attrs[k] = attrs[k]
+            elt.props[k] = attrs[k]
     }
 
     for (const child of (children ?? [])) {
@@ -42,12 +42,12 @@ export function h(tag: PrimitiveComponent|AbstractFuncComponent|CustomComponent,
                 if (c == null) continue
                 if (c instanceof AbstractDomNodeWithState)
                     c.key = `${key++}`
-                else if ((c as AbstractDomElement).attrs) {
+                else if ((c as AbstractDomElement).props) {
                     let domElt = c as AbstractDomElement
                     key++
-                    if (!domElt.attrs.key)
-                        domElt.attrs.key = `${key}`
-                    if (!domElt.attrs.id)
+                    if (!domElt.props.key)
+                        domElt.props.key = `${key}`
+                    if (!domElt.props.id)
                         console.warn('vdtree: No id given for elements in a map/array in ', elt)
                 }
                 elt.children.push(c)
@@ -61,7 +61,7 @@ export function h(tag: PrimitiveComponent|AbstractFuncComponent|CustomComponent,
 
 export function evalLazyElement(comp: AbstractDomElement): AbstractDomNode[] {
     if (isFunc(comp.tag)) {
-        return toArray((comp.tag as AbstractFuncComponent)(comp.attrs, comp.children))
+        return toArray((comp.tag as AbstractFuncComponent)(comp.props, comp.children))
     }
     return [comp]
 }

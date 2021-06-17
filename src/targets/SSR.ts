@@ -53,7 +53,7 @@ export function renderDomNodes(roots: OneOrMany<AbstractDomNode>): SSRDomResult 
             append(result, renderStatefulComponent(root.tag))
         }
         else if (isFunc(root.tag)) {
-            let outputs = toArray((root.tag as AbstractFuncComponent)(root.attrs, root.children))
+            let outputs = toArray((root.tag as AbstractFuncComponent)(root.props, root.children))
             outputs.forEach(o => {
                 append(result, renderDomNodes(o))
             })
@@ -69,8 +69,8 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
     let html = `<${root.tag}`
     let js = ''
     let css = ''
-    for (const k in root.attrs) {
-        const val = root.attrs[k]
+    for (const k in root.props) {
+        const val = root.props[k]
         if (k === 'style' && typeof(val) === 'object') {
             html += ' style="'
             for (const sk in val) {
