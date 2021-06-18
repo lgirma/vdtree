@@ -1,6 +1,6 @@
-import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement} from "../AbstractDOM";
+import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement, h} from "../AbstractDOM";
 import {BOOL_ATTRS, VOID_ELEMENTS} from "../Common";
-import {OneOrMany, toArray, camelToKebabCase, isFunc, isEmpty, uuid} from "boost-web-core";
+import {OneOrMany, toArray, camelToKebabCase, isFunc, parseBindingExpression} from "boost-web-core";
 import {
     AbstractDomNodeWithState,
     AbstractReadableState,
@@ -10,13 +10,22 @@ import {
 
 let eventHandlerCount = 0
 let stateCount = 0
+let fragmentCount = 0
 
 function renderStatefulComponent(statefulComponent: AbstractDomNodeWithState) {
     let state = statefulComponent.basedOn instanceof AbstractReadableState
         ? statefulComponent.basedOn
         : new SSRState(statefulComponent.basedOn)
     let abstractElt = statefulComponent.stateMapping(state)
-    return evaluatedDomElementToHtml(abstractElt)
+    let domSSR = evaluatedDomElementToHtml(abstractElt)
+    let js = getJsForState(state as SSRState)
+    let stateName = parseBindingExpression(statefulComponent.stateMapping).args[0]
+    let html = `<div id="container_state_${(state as SSRState).$$id}">${domSSR.html}</div><script>
+        (function(${stateName}){
+            ${domSSR.js}
+        })(state_${(state as SSRState).$$id})
+    </script>`
+    return {js, html, css: ''}
 }
 
 type SSRDomResult = {html: string, js: string, css: string}
@@ -28,12 +37,15 @@ function append(to: SSRDomResult, val: SSRDomResult) {
 }
 
 export function toHtmlString(roots: OneOrMany<AbstractDomNode>): string {
+    eventHandlerCount = 0
+    stateCount = 0
+    fragmentCount = 0
     const output = renderDomNodes(roots)
     let result = `${output.html}`;
     if (output.css.length > 0)
         result += `<style>${output.css}</style>`
     if (output.js.length > 0)
-        result += `<script>${output.js}</script>`
+        result = `<script>${initStateJs()} ${output.js}</script>` + result
     return result
 }
 
@@ -81,13 +93,24 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
             html += '"'
         }
         else if (val instanceof ValueBinding) {
-            let stateVal = val.get(val.state.get())
+            let stateVal = val.get((val.state as SSRState).$$basedOn)
             if (k == 'checked') {
                 if (stateVal)
                     html += ' checked="checked"'
+                const handlerName = `handler_${eventHandlerCount++}`
+                html += ` onchange="${handlerName}(event)"`
+                js += `\nwindow.${handlerName} = function(e) {
+                    state_${(val.state as SSRState).$$id}.set(e.target.checked);
+                }`
             }
-            else if (k == 'value')
+            else if (k == 'value') {
                 html += ` value="${stateVal}"`
+                const handlerName = `handler_${eventHandlerCount++}`
+                html += ` onchange="${handlerName}(event)"`
+                js += `\nwindow.${handlerName} = function(e) {
+                    state_${(val.state as SSRState).$$id}.set(e.target.value);
+                }`
+            }
             else {
                 html += ` k="${stateVal}"`
                 console.warn('vdiff: Binding to non-value attribute ' + k)
@@ -96,7 +119,7 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
         else if (isFunc(val) && k.indexOf('on') == 0) {
             const handlerName = `handler_${eventHandlerCount++}`
             html += ` ${k.toLowerCase()}="${handlerName}(event)"`
-            js += `\nvar ${handlerName} = ${val.toString()}`
+            js += `\nwindow.${handlerName} = ${val.toString()}`
         }
         else if (BOOL_ATTRS.indexOf(k) > -1) {
             if (val) html += ` ${k}`
@@ -133,15 +156,29 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
     return {html, js, css}
 }
 
-class SSRState<T> extends AbstractWritableState<T> {
+function getJsForState(state: SSRState): string {
+    let id = (state as SSRState<any>).$$id
+    let result = `\nwindow.state_${id} = new State(${id},
+        JSON.parse('${JSON.stringify(state.$$basedOn)}'));`
+    return result
+}
+
+class SSRState<T = any> extends AbstractWritableState<T> {
     $$basedOn: T
     $$id: number
-    get(): T { return this.$$basedOn }
+    get(): T {
+        let fragId = ++fragmentCount;
+        return h('span', {},
+            h('span', {id: `state_frag_${fragId}`}, `${this.$$basedOn}`),
+            h('script', {}, `state_${this.$$id}.subscribe(newVal => document.getElementById('state_frag_${fragId}').innerText = \`\${newVal}\`)`)
+        ) as any as T
+        /*return this.$$basedOn*/
+    }
     subscribe(subscriber: any): StateSubscription { return '' }
     unsubscribe(s: StateSubscription) { }
     mutate(reducer: (prev: T) => void): void { }
     bind(expr: ((state: T) => any) | undefined, setter: ((state: AbstractWritableState<T>, newValue: any) => void) | undefined): ValueBinding<T> {
-        return undefined as any
+        return new ValueBinding(this, expr, setter)
     }
     set(newVal: T): void { }
     update(reducer: (prev: T) => T): void { }
@@ -151,4 +188,39 @@ class SSRState<T> extends AbstractWritableState<T> {
         this.$$basedOn = initialValue
         this.$$id = ++stateCount
     }
+}
+
+function initStateJs() {
+    return `class State {
+        subscriberCount = 0;
+        subscriptions = {};
+        val = null;
+        id = 0;
+        
+        set(newVal) {
+            this.val = newVal;
+            this.notifySubscribers(newVal)
+        }
+        update(reducer) {this.set(reducer(this.val));}
+        mutate(reducer) {
+            let newVal = {...this.val};
+            reducer(newVal);
+            this.set(newVal);
+        }
+        subscribe(subscriber) {
+            this.subscriberCount++;
+            this.subscriptions[this.subscriberCount] = subscriber;
+            return this.subscriberCount.toString();
+        }
+        notifySubscribers(newVal) {
+            for (const k in this.subscriptions) {
+                this.subscriptions[k](newVal)
+            }
+        }
+        constructor(id, initialVal) {
+            this.id = id;
+            this.val = initialVal;
+        }
+    }
+    `
 }

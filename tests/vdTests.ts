@@ -7,11 +7,11 @@ const expect = chai.expect;
 describe('Abstract DOM Tests', () => {
 
     it('Sets up abstract DOM tree', () => {
-        let abstractTree = h('div', {}, [
+        let abstractTree = h('div', {},
             'child-1',
             h('child-2', {}),
             'child-3'
-        ])
+        )
 
         expect(abstractTree.tag).to.equal('div')
         expect(abstractTree.children.length).to.equal(3)

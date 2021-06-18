@@ -5,7 +5,7 @@ import {
     AbstractDomNode,
     evalLazyElement, h
 } from "../AbstractDOM";
-import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, uuid} from "boost-web-core";
+import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, randomHash} from "boost-web-core";
 // @ts-ignore
 import {DiffDOM} from "diff-dom";
 import {
@@ -109,8 +109,8 @@ function abstractDomElementToDomElements<T extends Node|Text>(root: AbstractDomE
 interface DomElementInstance {
     $$virElement: AbstractDomElement
     $$domElement: Node
-    update(newElt: AbstractDomElement): void
-    newAttrs(attrs: any): void
+    update(newElt: AbstractDomNode): void
+    newProps(attrs: any): void
 }
 
 export function renderToDom(elt: AbstractDomElement, target: HTMLElement, defer = false): DomElementInstance {
@@ -131,17 +131,17 @@ export function renderToDom(elt: AbstractDomElement, target: HTMLElement, defer 
                 this.$$domElement = newDomElement
             }
         },
-        newAttrs(attrs: Dict<any>|((prev: Dict<any>) => Dict<any>)) {
-            if (typeof attrs == 'function')
-                this.$$virElement.props = attrs(this.$$virElement.props)
+        newProps(props: Dict<any>|((prev: Dict<any>) => Dict<any>)) {
+            if (typeof props == 'function')
+                this.$$virElement.props = props(this.$$virElement.props)
             else
-                this.$$virElement.props = attrs
+                this.$$virElement.props = props
             this.update(this.$$virElement)
         }
     }
 }
 
-export class DOMState<T> extends AbstractWritableState<T> {
+export class DOMState<T = any> extends AbstractWritableState<T> {
     $$val: T
     $$subscriptions = {}
 
@@ -164,8 +164,8 @@ export class DOMState<T> extends AbstractWritableState<T> {
 
     subscribe(subscriber) {
         if (subscriber == null || !isFunc(subscriber))
-            return
-        let subscription = uuid()
+            return ''
+        let subscription = randomHash()
         this.$$subscriptions[subscription] = subscriber
         return subscription
     }

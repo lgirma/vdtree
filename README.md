@@ -417,18 +417,18 @@ To enable watch and update on the DOM when values change, use `renderToDom()` me
 ```javascript
 // First time render
 const watch = renderToDom(
-    <Comp prop={propVal} />, targetElement
+    <Comp prop={propVal}/>, targetElement
 )
 
 // Anytime you want to re-render the component:
 watch.update(
-    <Comp prop={newVal} />
+    <Comp prop={newVal}/>
 )
 
 // To update only attributes:
-watch.newAttrs(newAttrs)
+watch.newProps(newAttrs)
 //or
-watch.newAttrs(prevAttrs => ({...prevAttrs, someProp: newVal}))
+watch.newProps(prevAttrs => ({...prevAttrs, someProp: newVal}))
 ```
 
 Rather than doing a complete replacement, it will patch the changes efficiently.

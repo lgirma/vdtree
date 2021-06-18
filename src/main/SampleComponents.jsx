@@ -142,7 +142,7 @@ export const SamplesPage = <div>
     <h3>Adder</h3>
     {AbstractAdder}
 
-    <h3>Quadratic Calculator</h3>
+    {/*<h3>Quadratic Calculator</h3>
     {AbstractQuadraticSolver}
 
     <h3>Agreement</h3>
@@ -152,5 +152,5 @@ export const SamplesPage = <div>
     <AbstractRating maxVal={6} />
 
     <h3>Todo</h3>
-    {AbstractTodo}
+    {AbstractTodo}*/}
 </div>

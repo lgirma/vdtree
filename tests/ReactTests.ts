@@ -2,11 +2,20 @@ import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
 import {toReactElement, toReactComponent} from "../src/targets/React";
 import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import {withState} from "../src/AbstractState";
 // @ts-ignore
 const chai = require('chai');
 const expect = chai.expect;
 
 describe('React Tests', () => {
+
+    afterEach(() => {
+        document.body.innerHTML = ''
+        let root = document.createElement('div')
+        root.id = 'root'
+        document.body.append(root)
+    })
 
     it('Generates JSX Elements properly', () => {
         let abstractTree = h('div', {},
@@ -72,6 +81,53 @@ describe('React Tests', () => {
         expect(jsxElt.props.children.length).to.equal(2)
         expect(jsxElt.props.children[0].props.children).to.equal('child-1')
         expect(jsxElt.props.children[1].props.children).to.equal('child-2')
+    })
+
+    it('Generates stateful components properly', () => {
+        let abstractTree = withState(0, count => h('div', {},
+            h('span', {id: 'counter-info'}, count.get().toString()),
+            h('button', {onclick: e => count.update(c => c + 1), id: 'btn-inc'}, '+')
+        ))
+        let ReactComp = toReactComponent(abstractTree as any, React)
+        ReactDOM.render(React.createElement(ReactComp), document.getElementById('root')!)
+
+        let btn = document.getElementById('btn-inc')!
+        let info = document.getElementById('counter-info')!
+        expect(info.innerHTML).to.equal('0')
+        btn.click()
+        expect(info.innerHTML).to.equal('1')
+        btn.click()
+        expect(info.innerHTML).to.equal('2')
+    })
+
+    it('Generates stateful components with two-way bindings properly', () => {
+        let abstractTree = withState('', name => h('div', {},
+            h('input', {value: name.bind(), id: 'input-name'}),
+            h('button', {onclick: e => name.set('Hello'), id: 'btn-greet'}, '+')
+        ))
+        let ReactComp = toReactComponent(abstractTree as any, React)
+        ReactDOM.render(React.createElement(ReactComp), document.getElementById('root')!)
+
+        let btn = document.getElementById('btn-greet')!
+        let input = document.getElementById('input-name')! as HTMLInputElement
+        expect(input.value).to.equal('')
+        btn.click()
+        expect(input.value).to.equal('Hello')
+    })
+
+    it('Generates stateful components with property-path bindings properly', () => {
+        let abstractTree = withState({fullName: ''}, contact => h('div', {},
+            h('input', {value: contact.bind(c => c.fullName), id: 'input-full-name'}),
+            h('button', {onclick: e => contact.update(c => ({...c, fullName: 'John'})), id: 'btn-set-name'}, '+')
+        ))
+        let ReactComp = toReactComponent(abstractTree as any, React)
+        ReactDOM.render(React.createElement(ReactComp), document.getElementById('root')!)
+
+        let btn = document.getElementById('btn-set-name')!
+        let input = document.getElementById('input-full-name')! as HTMLInputElement
+        expect(input.value).to.equal('')
+        btn.click()
+        expect(input.value).to.equal('John')
     })
 
 })

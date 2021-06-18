@@ -1,6 +1,7 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
 import {toDomElements, toDomElement} from "../src/targets/DOM";
+import {withState} from "../src/AbstractState";
 // @ts-ignore
 const chai = require('chai');
 const expect = chai.expect;
@@ -60,6 +61,56 @@ describe('DOM Tests', () => {
         expect(domElts[0].innerHTML).to.equal('child-1')
         expect(domElts[1].tagName).to.equal('DIV')
         expect(domElts[1].innerHTML).to.equal('child-2')
+    })
+
+    it('Generates stateful components properly', () => {
+        document.body.innerHTML = ''
+        let abstractTree = withState(0, count => h('div', {},
+            h('span', {id: 'counter-info'}, count.get().toString()),
+            h('button', {onclick: e => count.update(c => c + 1), id: 'btn-inc'}, '+')
+        ))
+        let domElt = toDomElement(abstractTree as any, document.body)
+        document.body.append(domElt)
+
+        let btn = document.getElementById('btn-inc')!
+        let info = document.getElementById('counter-info')!
+        expect(info.innerHTML).to.equal('0')
+        btn.click()
+        expect(info.innerHTML).to.equal('1')
+        btn.click()
+        expect(info.innerHTML).to.equal('2')
+    })
+
+    it('Generates stateful components with two-way bindings properly', () => {
+        document.body.innerHTML = ''
+        let abstractTree = withState('', name => h('div', {},
+            h('input', {value: name.bind(), id: 'input-name'}),
+            h('button', {onclick: e => name.set('Hello'), id: 'btn-greet'}, '+')
+        ))
+        let domElt = toDomElement(abstractTree as any, document.body)
+        document.body.append(domElt)
+
+        let btn = document.getElementById('btn-greet')!
+        let input = document.getElementById('input-name')! as HTMLInputElement
+        expect(input.value).to.equal('')
+        btn.click()
+        expect(input.value).to.equal('Hello')
+    })
+
+    it('Generates stateful components with property-path bindings properly', () => {
+        document.body.innerHTML = ''
+        let abstractTree = withState({fullName: ''}, contact => h('div', {},
+            h('input', {value: contact.bind(c => c.fullName), id: 'input-full-name'}),
+            h('button', {onclick: e => contact.update(c => ({...c, fullName: 'John'})), id: 'btn-set-name'}, '+')
+        ))
+        let domElt = toDomElement(abstractTree as any, document.body)
+        document.body.append(domElt)
+
+        let btn = document.getElementById('btn-set-name')!
+        let input = document.getElementById('input-full-name')! as HTMLInputElement
+        expect(input.value).to.equal('')
+        btn.click()
+        expect(input.value).to.equal('John')
     })
 
 })
