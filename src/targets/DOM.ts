@@ -85,7 +85,9 @@ function abstractDomElementToDomElements<T extends Node|Text>(root: AbstractDomE
                 if (stateVal)
                     result.setAttribute(k, k)
             } else if (k == 'value')
-                (result as any).value = stateVal
+                if (result.tagName == 'TEXTAREA')
+                    (result as any).value = stateVal
+                else result.setAttribute(k, stateVal)
             else {
                 result.setAttribute(k, stateVal)
                 console.warn('vdiff: Binding to non-value attribute ' + k)
@@ -96,7 +98,7 @@ function abstractDomElementToDomElements<T extends Node|Text>(root: AbstractDomE
         else if (BOOL_ATTRS.indexOf(k) > -1) {
             if (val) result.setAttribute(k, k)
         }
-        else if (k == 'value') {
+        else if (k == 'value' && result.tagName == 'TEXTAREA') {
             (result as any).value = val
         }
         else
