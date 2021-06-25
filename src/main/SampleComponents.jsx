@@ -54,6 +54,13 @@ export const AbstractGreeter = withState('', name =>
     </div>
 )
 
+export const AbstractEditor = withState('Write here...', content =>
+    <div>
+        <textarea value={content.bind()} rows={5}></textarea>
+        <div>Chars: {content.get().length}</div>
+    </div>
+)
+
 export const AbstractAdder = withState({a: '0', b: '0'}, args => {
         const {a, b} = {a: parseFloat(args.get().a), b: parseFloat(args.get().b)}
         return <div>
@@ -142,7 +149,7 @@ export const SamplesPage = <div>
     <h3>Adder</h3>
     {AbstractAdder}
 
-    {/*<h3>Quadratic Calculator</h3>
+    <h3>Quadratic Calculator</h3>
     {AbstractQuadraticSolver}
 
     <h3>Agreement</h3>
@@ -151,6 +158,9 @@ export const SamplesPage = <div>
     <h3>Rating</h3>
     <AbstractRating maxVal={6} />
 
-    <h3>Todo</h3>
+    <h3>Editor</h3>
+    <AbstractEditor />
+
+    {/*<h3>Todo</h3>
     {AbstractTodo}*/}
 </div>

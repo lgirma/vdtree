@@ -21,7 +21,7 @@
             if (isFunc(dom))
                 _dom = h(dom)
             if (props != null)
-                _dom.attrs = props
+                _dom.props = props
             if (domInstance != null)
                 domInstance.update(_dom)
             else

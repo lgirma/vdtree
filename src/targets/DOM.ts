@@ -85,20 +85,25 @@ function abstractDomElementToDomElements<T extends Node|Text>(root: AbstractDomE
                 if (stateVal)
                     result.setAttribute(k, k)
             } else if (k == 'value')
-                result.setAttribute(k, stateVal)
+                (result as any).value = stateVal
             else {
                 result.setAttribute(k, stateVal)
                 console.warn('vdiff: Binding to non-value attribute ' + k)
             }
             result.addEventListener('change', bindingEL as any)
             result.addEventListener('input', bindingEL as any)
-        } else if (BOOL_ATTRS.indexOf(k) > -1) {
+        }
+        else if (BOOL_ATTRS.indexOf(k) > -1) {
             if (val) result.setAttribute(k, k)
-        } else
+        }
+        else if (k == 'value') {
+            (result as any).value = val
+        }
+        else
             result.setAttribute(k, val)
     }
 
-    if (root.children != null && root.children.length > 0) {
+    if (root.children != null && root.children.length > 0 && result.tagName != 'TEXTAREA') {
         result.append(...toDomElements(root.children, result))
     }
     results.push(result as any as T)

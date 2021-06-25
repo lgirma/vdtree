@@ -1,11 +1,12 @@
-import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, evalLazyElement, h} from "../AbstractDOM";
+import {AbstractDomElement, AbstractDomNode, AbstractFuncComponent, h} from "../AbstractDOM";
 import {BOOL_ATTRS, VOID_ELEMENTS} from "../Common";
-import {OneOrMany, toArray, camelToKebabCase, isFunc, parseBindingExpression} from "boost-web-core";
+import {camelToKebabCase, isFunc, OneOrMany, parseBindingExpression, toArray} from "boost-web-core";
 import {
     AbstractDomNodeWithState,
     AbstractReadableState,
     AbstractWritableState,
-    StateSubscription, ValueBinding
+    StateSubscription,
+    ValueBinding
 } from "../AbstractState";
 
 let eventHandlerCount = 0
@@ -106,7 +107,7 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
             else if (k == 'value') {
                 html += ` value="${stateVal}"`
                 const handlerName = `handler_${eventHandlerCount++}`
-                html += ` onchange="${handlerName}(event)"`
+                html += ` onchange="${handlerName}(event)" oninput="${handlerName}(event)"`
                 js += `\nwindow.${handlerName} = function(e) {
                     state_${(val.state as SSRState).$$id}.set(e.target.value);
                 }`
@@ -158,9 +159,8 @@ function evaluatedDomElementToHtml(root: AbstractDomElement): SSRDomResult {
 
 function getJsForState(state: SSRState): string {
     let id = (state as SSRState<any>).$$id
-    let result = `\nwindow.state_${id} = new State(${id},
+    return `\nwindow.state_${id} = new State(${id},
         JSON.parse('${JSON.stringify(state.$$basedOn)}'));`
-    return result
 }
 
 class SSRState<T = any> extends AbstractWritableState<T> {

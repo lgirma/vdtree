@@ -43,7 +43,7 @@ yarn add vdtree
 ```
 
 **Typescript Note**: Typescript currently has issues with `.tsx` templates with `vdtree`. 
-You may want to exclude tsx files in `tsconfig.json`
+You should put your jsx templates in `.jsx` files to skip type checking.
 
 ## Quick-Start Tutorials
 
@@ -438,10 +438,10 @@ Rather than doing a complete replacement, it will patch the changes efficiently.
 To render a static virtual DOM tree in a react component, use the `toReactComponent()` method.
 
 ```jsx
-// AbstractHelloWorld.tsx
+// AbstractHelloWorld.jsx
 export const AbstractHelloWorld = <div>Hello, World!</div>
 
-// ReactHelloWorld.tsx
+// ReactHelloWorld.jsx
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import {toReactComponent} from "vdtree"
@@ -456,11 +456,11 @@ Note that we had to pass `React` object as the second argument for `toReactCompo
 A simple greeter example,
 
 ```jsx
-// AbstractGreeter.tsx
+// AbstractGreeter.jsx
 export const AbstractGreeter =
     ({name = ''}) => <div>Hello, {name}</div>
 
-// ReactGreeter.tsx
+// ReactGreeter.jsx
 const ReactGreeter = toReactComponent(AbstractGreeter, React)
 ReactDOM.render(<ReactGreeter name="React"/>, document.body)
 ```
@@ -522,7 +522,7 @@ You can also use an abstract component inside the svelte component.
 A simple counter example:
 
 ```jsx
-// CounterInfo.tsx
+// CounterInfo.jsx
 const AbstractCounterInfo = ({c = 1}) => <div>{c}</div>
 
 // Counter.svelte
@@ -537,7 +537,7 @@ const AbstractCounterInfo = ({c = 1}) => <div>{c}</div>
 You can also use event handling as
 
 ```jsx
-// MyComp.tsx
+// MyComp.jsx
 const MyComp = <button onclick={e => alert('Clicked!')}>Click Me</button>
 
 // SvelteFile.svelte

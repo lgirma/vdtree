@@ -83,9 +83,10 @@ export function toReactElements<TElement = JSX.Element>(root: OneOrMany<Abstract
             reactElements.push(createElement(item.tag, item.props, item.children))
         }
         else if (typeof item.tag == 'string') {
-            let elt = createElement(item.tag,
-                htmlAttrsToReactAttrs({...item.props}),
-                ...toReactElements(item.children, React))
+            let reactAttrs = htmlAttrsToReactAttrs({...item.props})
+            let elt = item.tag == 'textarea'
+                ? createElement(item.tag, {...reactAttrs, defaultValue: item.children})
+                : createElement(item.tag, reactAttrs, ...toReactElements(item.children, React))
             reactElements.push(elt)
         }
         else {
