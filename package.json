@@ -11,7 +11,7 @@
     "build": "vite build && tsc --emitDeclarationOnly",
     "declaration": "tsc --emitDeclarationOnly",
     "serve": "vite preview",
-    "test": "ts-mocha -p ./tsconfig.tests.json -r jsdom-global/register 'tests/**/*.ts'"
+    "test": "ts-mocha -p tests/tsconfig.tests.json -r jsdom-global/register 'tests/**/*.ts'"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.10",

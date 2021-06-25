@@ -57,7 +57,12 @@ export const AbstractGreeter = withState('', name =>
 export const AbstractEditor = withState('Write here...', content =>
     <div>
         <textarea value={content.bind()} rows={5}></textarea>
-        <div>Chars: {content.get().length}</div>
+        <div>
+            <small>
+                Chars <b>{content.get().length}</b>,
+                Lines: <b>{content.get().split(/\r\n|\r|\n/).length}</b>
+            </small>
+        </div>
     </div>
 )
 
