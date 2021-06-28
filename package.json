@@ -1,10 +1,11 @@
 {
   "name": "vdtree",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Write your components once; Use them in vanilla JS, React, Svelte, SSR and more",
   "module": "dist/vdtree.es.js",
   "main": "dist/vdtree.umd.js",
   "types": "dist/index.d.ts",
+  "svelte": "dist/index_svelte",
   "scripts": {
     "dev": "vite",
     "ssr": "ts-node src/main/main_ssr.tsx",
@@ -29,6 +30,7 @@
     "mocha": "^8.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "rollup-plugin-svelte": "^7.1.0",
     "svelte": "^3.38.2",
     "svelte-preprocess": "^4.7.3",
     "ts-mocha": "^8.0.0",
@@ -38,6 +40,22 @@
   "dependencies": {
     "boost-web-core": "^1.12.0",
     "diff-dom": "^4.2.2"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "svelte": "^3.38.3"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
   },
   "author": "Leone",
   "repository": "https://github.com/lgirma/vdtree",

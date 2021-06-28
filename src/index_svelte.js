@@ -1,0 +1,1 @@
+export {default as SvelteWrapper} from './targets/SvelteWrapper.svelte'
