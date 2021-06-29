@@ -7,8 +7,7 @@ import {
 } from "../AbstractDOM";
 import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, randomHash} from "boost-web-core";
 // @ts-ignore
-import * as DiffDomLib from "diff-dom";
-const DiffDOM = (DiffDomLib as any).DiffDom
+import {DiffDOM} from "diff-dom";
 import {
     AbstractDomNodeWithState,
     AbstractReadableState,

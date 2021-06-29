@@ -99,18 +99,24 @@ describe('DOM Tests', () => {
 
     it('Generates stateful components with property-path bindings properly', () => {
         document.body.innerHTML = ''
-        let abstractTree = withState({fullName: ''}, contact => h('div', {},
-            h('input', {value: contact.bind(c => c.fullName), id: 'input-full-name'}),
-            h('button', {onclick: e => contact.update(c => ({...c, fullName: 'John'})), id: 'btn-set-name'}, '+')
+        let abstractTree = withState({name: {first: ''}}, contact => h('div', {},
+            h('input', {value: contact.bind(c => c.name.first), id: 'input-full-name'}),
+            h('button', {onclick: e => contact.update(c => ({...c, name: {first: 'John'}})), id: 'btn-set-name'}, '+'),
+            h('div', {id: 'panel-name'}, contact.get().name.first)
         ))
         let domElt = toDomElement(abstractTree as any, document.body)
         document.body.append(domElt)
 
         let btn = document.getElementById('btn-set-name')!
         let input = document.getElementById('input-full-name')! as HTMLInputElement
+        let namePanel = document.getElementById('panel-name') as HTMLDivElement
         expect(input.value).to.equal('')
         btn.click()
         expect(input.value).to.equal('John')
+        expect(namePanel.innerHTML).to.equal('John')
+        input.value = 'Doe'
+        input.dispatchEvent(new Event('input', {}))
+        expect(namePanel.innerHTML).to.equal('Doe')
     })
 
 })

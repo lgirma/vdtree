@@ -9,6 +9,18 @@ export abstract class AbstractReadableState<T = any> {
     abstract get(): T
 }
 
+function assign(obj: any, keyPath: string[], value: any) {
+    let lastKeyIndex = keyPath.length-1;
+    for (let i = 0; i < lastKeyIndex; ++ i) {
+        const key = keyPath[i];
+        if (!(key in obj)){
+            obj[key] = {}
+        }
+        obj = obj[key];
+    }
+    obj[keyPath[lastKeyIndex]] = value;
+}
+
 export class ValueBinding<T> {
     set: (state: AbstractWritableState<T>, newValue: any) => void
     get: (state: T) => any
@@ -23,8 +35,15 @@ export class ValueBinding<T> {
                 ? ((s, v) => s.set(v))
                 : ((s, v) => s.mutate(prev => {
                     let code = parseBindingExpression(get)
-                    let newCode = `(function(${code.args[0]}, v){ ${code.body} = v })`
-                    eval(newCode)(prev, v)
+                    let props = code.body.split('.')
+                    if (props[0] != code.args[0])
+                        console.warn(`vdtree: Unsupported binding expression '${code.body}'`)
+                    else {
+                        const [, ...propPaths] = props
+                        assign(prev, propPaths, v)
+                    }
+                    /*let newCode = `(function(${code.args[0]}, v){ ${code.body} = v })`
+                    eval(newCode)(prev, v)*/
                 }))
         }
     }
