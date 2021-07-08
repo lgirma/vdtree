@@ -506,45 +506,7 @@ which will output:
 
 ## Svelte
 
-You can use the abstract DOM in a svelte component using `SvelteWrapper` import
-
-```jsx
-<script>
-    import {h, SvelteWrapper} from 'vdtree'
-
-    let myDom = h('div', {}, 'Content')
-</script>
-
-<SvelteWrapper dom={myDom}/>
-```
-
-You can also use an abstract component inside the svelte component.
-A simple counter example:
-
-```jsx
-// CounterInfo.jsx
-const AbstractCounterInfo = ({c = 1}) => <div>{c}</div>
-
-// Counter.svelte
-<script>
-    let count = 0
-</script>
-
-<SvelteWrapper dom={AbstractCounterInfo} props={{c: count}} />
-<button on:click={e => count = count+1}>+</button>
-```
-
-You can also use event handling as
-
-```jsx
-// MyComp.jsx
-const MyComp = <button onclick={e => alert('Clicked!')}>Click Me</button>
-
-// SvelteFile.svelte
-<SvelteWrapper dom={MyComp}/>
-```
-
-**Note**: The `SvelteWrapper` will always create a top-level `<div>` tag.
+Checkout [vdtree-svelte](https://github.com/lgirma/vdtree-svelte)
 
 ## License
 

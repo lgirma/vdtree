@@ -1,5 +1,3 @@
 export * from './AbstractDOM'
-export * from './targets/React'
-export * from './targets/SSR'
-export * from './targets/DOM'
+export * from './DOM'
 export * from './AbstractState'

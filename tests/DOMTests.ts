@@ -1,6 +1,6 @@
 import { describe } from 'mocha';
 import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
-import {toDomElements, toDomElement} from "../src/targets/DOM";
+import {toDomElements, toDomElement} from "../src/DOM";
 import {withState} from "../src/AbstractState";
 // @ts-ignore
 const chai = require('chai');
