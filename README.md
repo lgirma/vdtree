@@ -6,7 +6,7 @@ Why `vdtree`?
 
 * You want to build a web component library targeting various frameworks
 * JSX support
-* Translate states to target framework way of doing it
+* Translate states to target framework
 * Strong types (made using Typescript)
 
 ## Table of Contents
@@ -24,7 +24,7 @@ Why `vdtree`?
 - Compile to Various Frameworks
     - [Rendering to the Browser DOM](#rendering-to-the-browser-dom)
     - [React](#react)
-    - [SSR](#to-server-side-rendered-ssr-html)
+    - [SSR](#server-side-rendered-ssr-html)
     - [Svelte](#svelte)
 - [License](#license)
 
@@ -76,30 +76,9 @@ import {renderToDom} from 'vdtree'
 renderToDom(HelloWorld, document.body)
 ```
 
-**React**:
-```jsx
-import {toReactComponent} from 'vdtree'
+-- Plugins highlight here --
 
-const ReactHelloWorld = toReactComponent(HelloWorld, React)
-ReactDOM.render(<ReactHelloWorld />, document.body)
-```
-
-**Svelte**:
-```jsx
-<script>
-    import {SvelteWrapper} from 'vdtree'
-</script>
-
-<SvelteWrapper dom={HelloWorld} />
-```
-
-**SSR**:
-```javascript
-import {toHtmlString} from 'vdtree'
-console.log(
-    toHtmlString(HelloWorld)
-)
-```
+Check out [vdtree-plugins](https://github.com/lgirma/vdtree-plugins) repository for various framework targets.
 
 ### Greeter
 
@@ -120,23 +99,11 @@ const AbstractGreeter =
     props => h('div', {}, `Hello, ${props.name}`)
 ```
 
-Then using it in various targets:
+Then to render that component,
 
 ```javascript
 // Vanilla JS:
 renderToDom(<AbstractGreeter name="Vanilla-JS" />, document.body)
-
-//React
-const ReactGreeter = toReactComponent(AbstractGreeter, React)
-ReactDOM.render(<ReactGreeter name="React" />, document.body)
-
-// Svelte:
-<SvelteWrapper dom={AbstractGreeter} props={{name: 'Svelte'}} />
-
-// SSR:
-toHtmlString(
-    h(AbstractGreeter, {name: 'SSR'})
-)
 ```
 
 ### Counter
@@ -154,22 +121,11 @@ const Counter = withState(0, count =>
     </div>)
 ```
 
-Then targeting various frameworks,
+Then to render it,
 
 ```jsx
 // Vanilla JS:
 renderToDom(Counter, document.body)
-
-// React:
-const ReactCounter = toReactComponent(Counter, React)
-ReactDOM.render(<ReactCounter />, document.body)
-
-// Svelte:
-<SvelteWrapper dom={Counter} />
-
-// SSR:
-toHtmlString(Counter)
-
 ```
 
 ## Getting Started
@@ -435,78 +391,15 @@ Rather than doing a complete replacement, it will patch the changes efficiently.
 
 ## React
 
-To render a static virtual DOM tree in a react component, use the `toReactComponent()` method.
+See [vdtree-react](https://github.com/lgirma/vdtree-plugins/tree/master/react) plugin.
 
-```jsx
-// AbstractHelloWorld.jsx
-export const AbstractHelloWorld = <div>Hello, World!</div>
+## Server-Side Rendered (SSR) HTML
 
-// ReactHelloWorld.jsx
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import {toReactComponent} from "vdtree"
-
-const ReactHelloWorld = toReactComponent(AbstractHelloWorld, React)
-
-ReactDOM.render(<ReactHelloWorld/>, document.body)
-```
-
-Note that we had to pass `React` object as the second argument for `toReactComponent()` method.
-
-A simple greeter example,
-
-```jsx
-// AbstractGreeter.jsx
-export const AbstractGreeter =
-    ({name = ''}) => <div>Hello, {name}</div>
-
-// ReactGreeter.jsx
-const ReactGreeter = toReactComponent(AbstractGreeter, React)
-ReactDOM.render(<ReactGreeter name="React"/>, document.body)
-```
-
-Including React components in abstract components is also possible.
-However, you will lose the ability of rendering the component to other targets.
-
-```jsx
-import {Button} from "@chakra-ui/react"
-
-<div>
-    <Button colorScheme="blue">Click Me</Button>
-</div>
-```
-
-## To Server-Side Rendered (SSR) HTML
-
-To get an HTML string from an abstract dom tree,
-
-```jsx
-import {toHtmlString, h} from "vdtree"
-
-const htmlString = toHtmlString(
-    <div>Hello, World!</div>
-)
-```
-
-Multiple top-level elements can also be used as
-
-```javascript
-toHtmlString([
-    h('div', {}, 'Item 1'),
-    h('div', {}, 'Item 2'),
-])
-```
-
-which will output:
-
-```html
-<div>Item 1</div>
-<div>Item 2</div>
-```
+See [vdtree-ssr](https://github.com/lgirma/vdtree-plugins/tree/master/ssr) plugin.
 
 ## Svelte
 
-Checkout [vdtree-svelte](https://github.com/lgirma/vdtree-svelte)
+See [vdtree-svelte](https://github.com/lgirma/vdtree-plugins/tree/master/svelte) plugin.
 
 ## License
 

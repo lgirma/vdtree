@@ -58,10 +58,3 @@ export function h(tag: PrimitiveComponent|AbstractFuncComponent|CustomComponent,
     }
     return elt
 }
-
-export function evalLazyElement(comp: AbstractDomElement): AbstractDomNode[] {
-    if (isFunc(comp.tag)) {
-        return toArray((comp.tag as AbstractFuncComponent)(comp.props, comp.children))
-    }
-    return [comp]
-}

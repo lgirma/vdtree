@@ -10,9 +10,6 @@ export default defineConfig({
             entry: path.resolve(__dirname, 'src/index.ts'),
             name: 'vdtree'
         },
-        minify: false,
-        rollupOptions: {
-
-        }
+        minify: false
     }
 })

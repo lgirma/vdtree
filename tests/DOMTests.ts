@@ -1,5 +1,5 @@
 import { describe } from 'mocha';
-import {h, AbstractDomElement, evalLazyElement} from "../src/AbstractDOM";
+import {h} from "../src/AbstractDOM";
 import {toDomElements, toDomElement} from "../src/DOM";
 import {withState} from "../src/AbstractState";
 // @ts-ignore

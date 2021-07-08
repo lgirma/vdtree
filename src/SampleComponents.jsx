@@ -1,9 +1,9 @@
 /** @jsx h */
-import {h} from '../AbstractDOM'
-import {withState} from "../AbstractState";
+import {h} from './AbstractDOM'
+import {withState} from "./AbstractState";
 import {uuid} from "boost-web-core";
 
-export const AbstractHelloWorld = ({subject = 'VD-Tree'}) => <span>{`Hello, ${subject}`}</span>
+export const AbstractHelloWorld = ({subject = 'vdtree'}) => <span>{`Hello, ${subject}`}</span>
 
 export const AbstractRating = ({maxVal = 5}) => withState(0, rating =>
     <div>
@@ -30,8 +30,8 @@ export const AbstractCounter = withState(0,count =>
 export const AbstractTemperatureCounter = withState(0,count =>
     <div>
         <div style={{color: `rgb(${255-count.get()}, 0, ${count.get()})`}}><b>{count.get()}</b></div>
-        <button onclick={e => count.update(c => c + 10)}>+</button>
-        <button onClick={e => count.update(c => c - 10)}>-</button>
+        <button onclick={e => count.update(c => c + 30)}>+</button>
+        <button onClick={e => count.update(c => c - 30)}>-</button>
         <button onClick={e => count.set(0)}>Reset</button>
     </div>
 )
@@ -113,18 +113,18 @@ export const AbstractTodo = withState(initialTodoState, state =>
         {
             state.get().items
                 .filter(t => state.get().showComplete || !t.isDone)
-                .filter(t => state.get().filter.length == 0 || t.task.toLowerCase().indexOf(state.get().filter.toLowerCase()) > -1)
+                .filter(t => state.get().filter.length === 0 || t.task.toLowerCase().indexOf(state.get().filter.toLowerCase()) > -1)
                 .map(t => <div>
                 <label>
                     <input type="checkbox"
                           checked={state.bind(
-                              s => s.items.find(j => j == t).isDone,
-                              (s, v) => s.mutate(prev => prev.items.find(j => j == t).isDone = v))} />
+                              s => s.items.find(j => j === t).isDone,
+                              (s, v) => s.mutate(prev => prev.items.find(j => j === t).isDone = v))} />
                               {t.task}
                 </label>
             </div>)
         }
-        {state.get().items.length == 0 ? <div>No Tasks</div> : ''}
+        {state.get().items.length === 0 ? <div>No Tasks</div> : ''}
         <div>
             <input value={state.bind(s => s.newTask)} placeholder="New Item" />
             <button onclick={e => state.mutate(s => {

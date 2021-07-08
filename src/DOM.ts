@@ -2,8 +2,7 @@ import {BOOL_ATTRS} from "./Common";
 import {
     AbstractFuncComponent,
     AbstractDomElement,
-    AbstractDomNode,
-    evalLazyElement, h
+    AbstractDomNode
 } from "./AbstractDOM";
 import {Dict, isArray, isFunc, Nullable, OneOrMany, toArray, randomHash} from "boost-web-core";
 // @ts-ignore
