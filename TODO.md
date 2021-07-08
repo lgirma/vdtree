@@ -1,8 +1,0 @@
-- [ ] Rename `toHtmlString` to 
-    - [ ] `toSSR()` - returns a complete HTML page
-    - [ ] `toSSRFragment()` returns an SSR output {html, css, js}
-- [ ] Support states in SSR
-    - [x] `state.get()`
-    - [x] `state.set()` and `state.update()`
-    - [ ] `state.get().props`
-    - [ ] `state.bind()`
