@@ -72,11 +72,24 @@ Then targeting various frameworks:
 
 **Vanilla Javascript (no framework)**:
 ```javascript
-import {renderToDom} from 'vdtree'
+import {renderToDom} from 'vdtree-dom'
 renderToDom(HelloWorld, document.body)
 ```
 
--- Plugins highlight here --
+**React**:
+```jsx
+import {ReactWrapper} from 'vdtree-react'
+ReactDOM.render(<ReactWrapper dom={HelloWorld}/>, document.body)
+```
+
+**Svelte**:
+```jsx
+<script>
+    import {SvelteWrapper} from 'vdtree-svelte'
+</script>
+
+<SvelteWrapper dom={HelloWorld}/>
+```
 
 Check out [vdtree-plugins](https://github.com/lgirma/vdtree-plugins) repository for various framework targets.
 
@@ -101,9 +114,15 @@ const AbstractGreeter =
 
 Then to render that component,
 
-```javascript
+```jsx
 // Vanilla JS:
 renderToDom(<AbstractGreeter name="Vanilla-JS" />, document.body)
+
+// React:
+<ReactWrapper dom={AbstractGreeter} props={{name: 'React'}} />
+
+// Svelte:
+<SvelteWrapper dom={AbstractGreeter} props={{name: 'React'}} />
 ```
 
 ### Counter
@@ -119,13 +138,6 @@ const Counter = withState(0, count =>
         <div>{count.get()}</div>
         <button onclick={e => count.update(c => c + 1)}>+</button>
     </div>)
-```
-
-Then to render it,
-
-```jsx
-// Vanilla JS:
-renderToDom(Counter, document.body)
 ```
 
 ## Getting Started
@@ -343,51 +355,7 @@ const AbstractQuadraticSolver = withState({c1: '0', c2: '0', c3: '0'}, coef => {
 
 ## Rendering to the browser DOM
 
-Use
-
-* `renderToDom()` method to render an abstract component to DOM
-* `toDomElement()` method to create a DOM element from abstract component
-
-```jsx
-/** @jsx h */
-import {toDomElement, h} from 'vdtree'
-
-const abstractElt = <div>Hello, World!</div>
-document.body.append(toDomElement(abstractElt))
-```
-
-If you want to render multiple root-level elements, use `toDom`
-
-```javascript
-import {toDom, h} from 'vdtree'
-
-const abstractElts = [
-    <div>Element 1</div>,
-    <div>Element 3</div>
-]
-document.body.append(...toDom(abstractElts))
-```
-
-To enable watch and update on the DOM when values change, use `renderToDom()` method
-
-```javascript
-// First time render
-const watch = renderToDom(
-    <Comp prop={propVal}/>, targetElement
-)
-
-// Anytime you want to re-render the component:
-watch.update(
-    <Comp prop={newVal}/>
-)
-
-// To update only attributes:
-watch.newProps(newAttrs)
-//or
-watch.newProps(prevAttrs => ({...prevAttrs, someProp: newVal}))
-```
-
-Rather than doing a complete replacement, it will patch the changes efficiently.
+See [vdtree-dom](https://github.com/lgirma/vdtree-plugins/tree/master/dom) plugin.
 
 ## React
 
