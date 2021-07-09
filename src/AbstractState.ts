@@ -21,31 +21,28 @@ function assign(obj: any, keyPath: string[], value: any) {
     obj[keyPath[lastKeyIndex]] = value;
 }
 
-export class ValueBinding<T> {
-    set: (state: AbstractWritableState<T>, newValue: any) => void
-    get: (state: T) => any
-    state: AbstractWritableState<T>
+export class ValueBinding<TState, TVal = TState> {
+    set: (state: AbstractWritableState<TState>, newValue: TVal) => void
+    get: (state: TState) => TVal
+    state: AbstractWritableState<TState>
 
-    constructor(state, get?, set?) {
+    constructor(state: AbstractWritableState<TState>, get?: (state: TState) => TVal, set?: (state: AbstractWritableState<TState>, newValue: TVal) => void) {
         this.state = state
-        this.get = get ?? (s => s)
-        this.set = set
-        if (this.set == null) {
-            this.set = get == null
-                ? ((s, v) => s.set(v))
-                : ((s, v) => s.mutate(prev => {
-                    let code = parseBindingExpression(get)
-                    let props = code.body.split('.')
-                    if (props[0] != code.args[0])
-                        console.warn(`vdtree: Unsupported binding expression '${code.body}'`)
-                    else {
-                        const [, ...propPaths] = props
-                        assign(prev, propPaths, v)
-                    }
-                    /*let newCode = `(function(${code.args[0]}, v){ ${code.body} = v })`
-                    eval(newCode)(prev, v)*/
-                }))
-        }
+        this.get = get ?? (s => s as unknown as TVal)
+        this.set = set ?? (get == null
+            ? ((s, v) => s.set(v as unknown as TState))
+            : ((s, v) => s.mutate(prev => {
+                let code = parseBindingExpression(get)
+                let props = code.body.split('.')
+                if (props[0] != code.args[0])
+                    console.warn(`vdtree: Unsupported binding expression '${code.body}'`)
+                else {
+                    const [, ...propPaths] = props
+                    assign(prev, propPaths, v)
+                }
+                /*let newCode = `(function(${code.args[0]}, v){ ${code.body} = v })`
+                eval(newCode)(prev, v)*/
+            })))
     }
 }
 
@@ -72,7 +69,7 @@ export class DerivedReadonlyState<T, TBasedOn extends AbstractReadableState[]> e
 }
 
 export abstract class AbstractWritableState<T = any> extends AbstractReadableState<T> {
-    abstract bind(expr?: (state: T) => any, setter?: (state: AbstractWritableState<T>, newValue: any) => void): ValueBinding<T>
+    abstract bind<TVal = T>(expr?: (state: T) => TVal, setter?: (state: AbstractWritableState<T>, newValue: TVal) => void): ValueBinding<T, TVal>
     abstract set(newVal: T): void
     abstract update(reducer: (prev: T) => T): void
     abstract mutate(reducer: (prev: T) => void): void
